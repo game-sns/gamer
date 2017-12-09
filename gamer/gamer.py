@@ -1,3 +1,13 @@
+# !/usr/bin/python2
+# coding: utf-8
+
+# Copyright YYYY AUTHORS
+#
+# YOUR COPYRIGHT HERE (IF YOU WANT IT)
+
+
+""" Make your machine use its full potential to solve GAME models """
+
 from threading import Thread
 from time import sleep
 

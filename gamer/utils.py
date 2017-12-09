@@ -1,3 +1,13 @@
+# !/usr/bin/python2
+# coding: utf-8
+
+# Copyright YYYY AUTHORS
+#
+# YOUR COPYRIGHT HERE (IF YOU WANT IT)
+
+
+""" GAMER utils and tools """
+
 import os
 
 
