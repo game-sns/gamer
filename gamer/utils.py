@@ -17,10 +17,24 @@ def get_pretty_date(dt):
 
 
 def get_name_ext(path):
+    """
+    :param path: str
+        Path of file/folder
+    :return: tuple (str, str)
+        Name of file, extension of file
+    """
+
     return os.path.splitext(path)
 
 
 def is_hidden(path):
+    """
+    :param path: str
+        Path to file/folder
+    :return: bool
+        True iff path is hidden (starting with a dot)
+    """
+
     name, extension = get_name_ext(path)
     return name.startswith(".")
 
@@ -49,6 +63,15 @@ def ls_recurse(path, include_hidden=False):
 
 
 def get_files(path, ending):
+    """
+    :param path: str
+        Path to folder
+    :param ending: str
+        Ending of files to be selected
+    :return: [] of str
+        List of files found (recursively) not hidden
+    """
+
     content = ls_recurse(path)
     return [
         f for f in content
@@ -75,6 +98,13 @@ def write_data_to_json(data, output_file):
 
 
 def very_intensive_calc(big_num):
+    """
+    :param big_num: int
+        Very big number
+    :return: the input
+        Makes some intensive calculations
+    """
+
     for _ in range(big_num):
         _ * _
     return big_num

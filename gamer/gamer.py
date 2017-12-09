@@ -63,6 +63,11 @@ def tester(big_num, threads, processes):
 
 
 def main():
+    """
+    :return: void
+        Runs core algorithm
+    """
+
     max_threads = 8
     max_processes = 8
     test_results = []
