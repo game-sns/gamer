@@ -8,39 +8,54 @@
 
 """ Make your machine use its full potential to solve GAME models """
 
+import time
 from datetime import datetime
-from multiprocessing import Process
-from multiprocessing import cpu_count
+from multiprocessing import Pool
 from threading import Thread
 
 import numpy as np
 
-BIG_NUMBER = 10 ** 8
-MAX_PROCESSES = cpu_count()
-THREADS_COUNT = 2
-PROC_COUNT = 3
+BIG_NUMBER = 3 * 10 ** 4
+THREADS_COUNT = 6
+PROC_COUNT = 2
+
+
+def get_pretty_date(dt):
+    return dt.strftime("%H:%M:%S")
 
 
 def very_intensive_calc(big_num):
-    print datetime.now(), "->", "calc", big_num
     for _ in range(big_num):
         _ * _
+    return big_num
 
 
-def threaded_function(thread_name):
-    print "\t", datetime.now(), "->", thread_name, "START"
-    print "\t", "Thread Executing!"
-    print "\t", datetime.now(), "->", thread_name, "DONE"
+def threaded_function(thread_name, big_num, processes):
+    print "\t", get_pretty_date(datetime.now()), "->", thread_name, \
+        "THREAD ON"
+    pool = Pool(processes=processes)
+    results = pool.map(
+        very_intensive_calc,
+        range(1, big_num)
+    )
+    pool.close()
+    pool.join()
+    print "\t", get_pretty_date(datetime.now()), "->", thread_name, \
+        "THREAD OFF"
 
 
-def processed_function():
-    print datetime.now(), "process START"
+def tester(big_num, threads, processes):
+    print "log10(big)", np.log10(big_num)
+    print "# threads", threads
+    print "# processes", processes, "\n"
+    print "Time now:", get_pretty_date(datetime.now())
 
+    stopwatch = time.time()
     threads = [
         Thread(
             target=threaded_function,
-            args=(thread_num,)
-        ) for thread_num in range(THREADS_COUNT)
+            args=(thread_num, big_num, processes)
+        ) for thread_num in range(threads)
     ]
 
     for thread in threads:
@@ -49,27 +64,15 @@ def processed_function():
     for thread in threads:
         thread.join()
 
-    print datetime.now(), "process END"
+    stopwatch = time.time() - stopwatch
+    print "Time now:", get_pretty_date(datetime.now())
+    print "Elapsed seconds:", stopwatch
 
 
 def main():
-    print "log10(big)", np.log10(BIG_NUMBER)
-    print "# threads", THREADS_COUNT
-    print "# processes in use per thread", PROC_COUNT, "\n"
-
-    processes = [
-        Process(
-            target=processed_function()
-        ) for _ in range(PROC_COUNT)
-    ]
-
-    for process in processes:
-        process.start()
-
-    for process in processes:
-        process.join()
-
-    print "Processes finished...exiting"
+    for thread in range(1, 2):
+        for proc in range(1, 6):
+            tester(BIG_NUMBER, thread, proc)
 
 
 if __name__ == "__main__":
