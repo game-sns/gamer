@@ -8,7 +8,6 @@
 
 """ Power-up your machine to solve GAME models """
 
-import json
 import time
 from datetime import datetime
 from multiprocessing import Pool
@@ -16,37 +15,11 @@ from threading import Thread
 
 import numpy as np
 
+from utils import get_pretty_date, write_data_to_json, very_intensive_calc
+
 BIG_NUMBER = 3 * 10 ** 4
 THREADS_COUNT = 6
 PROC_COUNT = 2
-
-
-def get_pretty_date(dt):
-    return dt.strftime("%H:%M:%S")
-
-
-def write_data_to_json(data, output_file):
-    """
-    :param data: list of {} or {}
-        Data to write
-    :param output_file: str
-        Path to output file
-    :return: void
-        Saves output file as .json
-    """
-
-    with open(output_file, "w") as out:
-        json.dump(
-            data,  # data
-            out,  # file handler
-            indent=4, sort_keys=True  # pretty print
-        )
-
-
-def very_intensive_calc(big_num):
-    for _ in range(big_num):
-        _ * _
-    return big_num
 
 
 def threaded_function(thread_name, big_num, processes):
