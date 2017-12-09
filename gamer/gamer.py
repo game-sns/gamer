@@ -18,8 +18,8 @@ import numpy as np
 from utils import get_pretty_date, write_data_to_json, very_intensive_calc
 
 BIG_NUMBER = 3 * 10 ** 4
-THREADS_COUNT = 6
-PROC_COUNT = 2
+THREADS_COUNT = 7
+PROCESSES_COUNT = 1
 
 
 def threaded_function(thread_name, big_num, processes):

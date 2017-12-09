@@ -10,6 +10,8 @@
 
 import json
 
+from utils import get_files
+
 
 class GameConfig(object):
     """ Config files for GAME models """
@@ -38,3 +40,30 @@ class GameConfig(object):
                 )  # read and return json object
 
         return self.raw_data
+
+
+class Gamer(object):
+    """ He who runs GAME models """
+
+    def __init__(self, config_folder):
+        """
+        :param config_folder: str
+            Path to folder containing config files
+        """
+
+        object.__init__(self)
+
+        self.config_folder = config_folder
+        self.configs = []
+
+    def scan_folder(self):
+        """
+        :return: void
+            Scans config folder and finds config files
+        """
+
+        configs = get_files(self.config_folder, ending="json")
+        configs = [
+            GameConfig(config) for config in configs
+        ]
+        self.configs = configs
