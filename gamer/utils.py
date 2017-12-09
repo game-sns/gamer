@@ -41,3 +41,11 @@ def ls_recurse(path, include_hidden=False):
                     include_hidden=include_hidden
                 )  # get list of files in directory
     return lst
+
+
+def get_files(path, ending="json"):
+    content = ls_recurse(path)
+    return [
+        f for f in content
+        if f.endswith(ending) and os.path.isfile(f)
+    ]

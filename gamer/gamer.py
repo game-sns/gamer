@@ -6,7 +6,7 @@
 # YOUR COPYRIGHT HERE (IF YOU WANT IT)
 
 
-""" Make your machine use its full potential to solve GAME models """
+""" Power-up your machine to solve GAME models """
 
 import json
 import time
@@ -53,7 +53,7 @@ def threaded_function(thread_name, big_num, processes):
     print "\t", get_pretty_date(datetime.now()), "->", thread_name, \
         "THREAD ON"
     pool = Pool(processes=processes)
-    results = pool.map(
+    _ = pool.map(
         very_intensive_calc,
         range(1, big_num)
     )
