@@ -9,8 +9,9 @@
 """ GAME models """
 
 import json
+from threading import Thread
 
-from utils import get_files
+from utils import get_files, threaded_function
 
 
 class GameConfig(object):
@@ -26,6 +27,7 @@ class GameConfig(object):
 
         self.config_file = config_file
         self.raw_data = None
+        self.parse()
 
     def parse(self):
         """
@@ -40,6 +42,14 @@ class GameConfig(object):
                 )  # read and return json object
 
         return self.raw_data
+
+    def get_args(self):
+        """
+        :return: tuple (...)
+            Args written in config file
+        """
+
+        return 10 ** 3, 2
 
 
 class Gamer(object):
@@ -56,14 +66,27 @@ class Gamer(object):
         self.config_folder = config_folder
         self.configs = []
 
-    def scan_folder(self):
+    def parse_configs(self):
         """
         :return: void
             Scans config folder and finds config files
         """
 
-        configs = get_files(self.config_folder, ending="json")
-        configs = [
-            GameConfig(config) for config in configs
+        self.configs = get_files(self.config_folder, ending="json")
+        self.configs = [
+            GameConfig(config) for config in self.configs
         ]
-        self.configs = configs
+
+    def run(self):
+        threads = [
+            Thread(
+                target=threaded_function,
+                args=config.get_args()
+            ) for config in self.configs
+        ]
+
+        for thread in threads:  # start
+            thread.start()
+
+        for thread in threads:  # wait until all are done
+            thread.join()

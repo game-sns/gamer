@@ -10,6 +10,8 @@
 
 import json
 import os
+from datetime import datetime
+from multiprocessing import Pool
 
 
 def get_pretty_date(dt):
@@ -108,3 +110,28 @@ def very_intensive_calc(big_num):
     for _ in range(big_num):
         _ * _
     return big_num
+
+
+def threaded_function(thread_name, big_num, processes):
+    """
+    :param thread_name: str
+        Name of thread currently running on
+    :param big_num: int
+        Very big int
+    :param processes: int
+        Number of sub-processes to handle
+    :return: void
+        Run function with multi-threading
+    """
+
+    print "\t", get_pretty_date(datetime.now()), "->", thread_name, \
+        "THREAD ON"
+    pool = Pool(processes=processes)
+    _ = pool.map(
+        very_intensive_calc,
+        range(1, big_num)
+    )
+    pool.close()
+    pool.join()
+    print "\t", get_pretty_date(datetime.now()), "->", thread_name, \
+        "THREAD OFF"
