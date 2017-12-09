@@ -8,29 +8,52 @@
 
 """ Make your machine use its full potential to solve GAME models """
 
+from datetime import datetime
+from multiprocessing import Pool
 from threading import Thread
-from time import sleep
+
+import numpy as np
+
+BIG_NUMBER = 10 ** 8
+THREADS_COUNT = 4
+PROC_COUNT = 16  # cpu_count() / THREADS_COUNT
 
 
-def threaded_function(counter, thread_name):
-    for i in range(counter):
-        print thread_name, "is RUNNING counter", i
-        sleep(1)  # << calculations here
-        print thread_name, "has DONE counter", i
+def very_intensive_calc(big_num):
+    for _ in range(big_num):
+        _ * _
 
 
-if __name__ == "__main__":
+def threaded_function(thread_name):
+    print datetime.now(), "->", thread_name, "START"
+    pool = Pool(PROC_COUNT)
+    pool.map(
+        very_intensive_calc,
+        (BIG_NUMBER,)
+    )
+    print datetime.now(), "->", thread_name, "DONE"
+
+
+def main():
+    print "log10(big)", np.log10(BIG_NUMBER)
+    print "# threads", THREADS_COUNT
+    print "# processes in use per thread", PROC_COUNT, "\n"
+
     threads = [
         Thread(
             target=threaded_function,
-            args=(5, thread_num)
-        ) for thread_num in range(4)
+            args=(thread_num,)
+        ) for thread_num in range(THREADS_COUNT)
     ]
 
-    for thread in threads:
+    for thread in threads:  # start
         thread.start()
 
-    for thread in threads:
+    for thread in threads:  # wait until all have finished
         thread.join()
 
     print "Threads finished...exiting"
+
+
+if __name__ == "__main__":
+    main()
