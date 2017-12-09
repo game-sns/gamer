@@ -9,35 +9,32 @@
 """ Make your machine use its full potential to solve GAME models """
 
 from datetime import datetime
-from multiprocessing import Pool
+from multiprocessing import Process
+from multiprocessing import cpu_count
 from threading import Thread
 
 import numpy as np
 
 BIG_NUMBER = 10 ** 8
-THREADS_COUNT = 4
-PROC_COUNT = 16  # cpu_count() / THREADS_COUNT
+MAX_PROCESSES = cpu_count()
+THREADS_COUNT = 2
+PROC_COUNT = 3
 
 
 def very_intensive_calc(big_num):
+    print datetime.now(), "->", "calc", big_num
     for _ in range(big_num):
         _ * _
 
 
 def threaded_function(thread_name):
-    print datetime.now(), "->", thread_name, "START"
-    pool = Pool(PROC_COUNT)
-    pool.map(
-        very_intensive_calc,
-        (BIG_NUMBER,)
-    )
-    print datetime.now(), "->", thread_name, "DONE"
+    print "\t", datetime.now(), "->", thread_name, "START"
+    print "\t", "Thread Executing!"
+    print "\t", datetime.now(), "->", thread_name, "DONE"
 
 
-def main():
-    print "log10(big)", np.log10(BIG_NUMBER)
-    print "# threads", THREADS_COUNT
-    print "# processes in use per thread", PROC_COUNT, "\n"
+def processed_function():
+    print datetime.now(), "process START"
 
     threads = [
         Thread(
@@ -46,13 +43,33 @@ def main():
         ) for thread_num in range(THREADS_COUNT)
     ]
 
-    for thread in threads:  # start
+    for thread in threads:
         thread.start()
 
-    for thread in threads:  # wait until all have finished
+    for thread in threads:
         thread.join()
 
-    print "Threads finished...exiting"
+    print datetime.now(), "process END"
+
+
+def main():
+    print "log10(big)", np.log10(BIG_NUMBER)
+    print "# threads", THREADS_COUNT
+    print "# processes in use per thread", PROC_COUNT, "\n"
+
+    processes = [
+        Process(
+            target=processed_function()
+        ) for _ in range(PROC_COUNT)
+    ]
+
+    for process in processes:
+        process.start()
+
+    for process in processes:
+        process.join()
+
+    print "Processes finished...exiting"
 
 
 if __name__ == "__main__":
