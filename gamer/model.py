@@ -49,7 +49,7 @@ class GameConfig(object):
             Args written in config file
         """
 
-        return 10 ** 3, 2
+        return 10 ** 3, 2, 1
 
 
 class Gamer(object):

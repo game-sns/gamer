@@ -9,6 +9,7 @@
 """ Power-up your machine to solve GAME models """
 
 import os
+import time
 
 from model import Gamer
 
@@ -20,6 +21,7 @@ CONFIG_FOLDER = os.path.join(
     "tmp",
     "game"
 )
+SEC_BETWEEN_RUNS = 2
 
 
 def main():
@@ -31,6 +33,10 @@ def main():
     while True:
         gamer = Gamer(CONFIG_FOLDER)
         gamer.parse_configs()
+        gamer.run()
+
+        print "Resting", SEC_BETWEEN_RUNS, "seconds before checking again ..."
+        time.sleep(SEC_BETWEEN_RUNS)
 
 
 if __name__ == "__main__":
