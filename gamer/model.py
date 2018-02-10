@@ -11,7 +11,7 @@
 import json
 from threading import Thread
 
-from utils import get_files, threaded_function
+from utils import get_files, run_game
 
 
 class GameConfig(object):
@@ -43,13 +43,28 @@ class GameConfig(object):
 
         return self.raw_data
 
+    def get_arg(self, key):
+        """
+        :param key: str
+            Key to get
+        :return: obj
+            Value in data
+        """
+
+        if key in self.raw_data:
+            return self.raw_data[key]
+
+        return None
+
     def get_args(self):
         """
         :return: tuple (...)
             Args written in config file
         """
 
-        return 10 ** 3, 2, 1
+        return self.get_arg("labels"), \
+               self.get_arg("additional labels"), \
+               self.get_arg("UploadFolder")
 
 
 class Gamer(object):
@@ -80,7 +95,7 @@ class Gamer(object):
     def run(self):
         threads = [
             Thread(
-                target=threaded_function,
+                target=run_game,
                 args=config.get_args()
             ) for config in self.configs
         ]

@@ -13,6 +13,8 @@ import os
 from datetime import datetime
 from multiprocessing import Pool
 
+from game.models import Game
+
 
 def get_pretty_date(dt):
     return dt.strftime("%H:%M:%S")
@@ -97,6 +99,29 @@ def write_data_to_json(data, output_file):
             out,  # file handler
             indent=4, sort_keys=True  # pretty print
         )
+
+
+def run_game(labels, additional_features, output_folder):
+    output_filename = os.path.join(output_folder, "output_ml.dat")
+    driver = Game(
+        labels,
+        output_filename=output_filename,
+        manual_input=False,
+        verbose=True
+    )
+    driver.run()
+
+    output_filename = os.path.join(output_folder,
+                                   "output_ml_additional.dat")
+    driver.run_additional_labels(
+        additional_features=additional_features,
+        labels_file=os.path.join(
+            os.getcwd(),
+            "library",
+            "additional_labels.dat"
+        ),
+        output_filename=output_filename
+    )
 
 
 def very_intensive_calc(big_num):
