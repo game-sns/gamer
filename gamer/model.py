@@ -72,6 +72,8 @@ class GameConfig(object):
 
         return self.get_arg("labels"), \
                self.get_arg("additional labels"), \
+               self.get_arg("InputFile"), \
+               self.get_arg("ErrorFile"), \
                self.get_arg("UploadFolder")
 
 

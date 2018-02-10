@@ -11,8 +11,6 @@
 import json
 import os
 import shutil
-from datetime import datetime
-from multiprocessing import Pool
 
 from game.models import Game
 
@@ -117,13 +115,16 @@ def write_data_to_json(data, output_file):
         )
 
 
-def run_game(labels, additional_features, output_folder):
+def run_game(labels, additional_features, input_file, errors_file,
+             output_folder):
     output_filename = os.path.join(output_folder, "output_ml.dat")
     driver = Game(
         labels,
         output_filename=output_filename,
         manual_input=False,
-        verbose=True
+        verbose=True,
+        inputs_file=input_file,
+        errors_file=errors_file
     )
     driver.run()
 
@@ -138,44 +139,6 @@ def run_game(labels, additional_features, output_folder):
         ),
         output_filename=output_filename
     )
-
-
-def very_intensive_calc(big_num):
-    """
-    :param big_num: int
-        Very big number
-    :return: the input
-        Makes some intensive calculations
-    """
-
-    for _ in range(big_num):
-        _ * _
-    return big_num
-
-
-def threaded_function(thread_name, big_num, processes):
-    """
-    :param thread_name: str
-        Name of thread currently running on
-    :param big_num: int
-        Very big int
-    :param processes: int
-        Number of sub-processes to handle
-    :return: void
-        Run function with multi-threading
-    """
-
-    print "\t", get_pretty_date(datetime.now()), "->", thread_name, \
-        "THREAD ON"
-    pool = Pool(processes=processes)
-    _ = pool.map(
-        very_intensive_calc,
-        range(1, big_num)
-    )
-    pool.close()
-    pool.join()
-    print "\t", get_pretty_date(datetime.now()), "->", thread_name, \
-        "THREAD OFF"
 
 
 def name_of_folder(path):
