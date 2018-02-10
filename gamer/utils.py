@@ -10,6 +10,7 @@
 
 import json
 import os
+import shutil
 from datetime import datetime
 from multiprocessing import Pool
 
@@ -175,3 +176,32 @@ def threaded_function(thread_name, big_num, processes):
     pool.join()
     print "\t", get_pretty_date(datetime.now()), "->", thread_name, \
         "THREAD OFF"
+
+
+def name_of_folder(path):
+    """
+    :param path: str
+        Path to folder
+    :return: str
+        Name of folder
+    """
+
+    return os.path.basename(path)
+
+
+def move_folder(original_path, output_containing_folder):
+    """
+    :param original_path: str
+        Path to folder to move
+    :param output_containing_folder: str
+        Path to output containing folder
+    :return: void
+        Moves folder tree to output folder
+    """
+
+    contents = os.listdir(original_path)
+    folder_name = name_of_folder(original_path)
+    out_folder = os.path.join(output_containing_folder, folder_name)
+    for sub_dir in contents:
+        dir_to_move = os.path.join(original_path, sub_dir)
+        shutil.move(dir_to_move, out_folder)

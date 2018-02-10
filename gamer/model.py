@@ -12,7 +12,8 @@ import json
 import os
 from threading import Thread
 
-from utils import run_game, get_folders
+from config import OUTPUT_FOLDER
+from utils import run_game, get_folders, name_of_folder, move_folder
 
 
 class GameConfig(object):
@@ -112,8 +113,16 @@ class Gamer(object):
         for thread in threads:  # wait until all are done
             thread.join()
 
+        self.end_run()
+
     def end_run(self):
         """
         :return: void
-            Ends run and move config to ouput folder
+            Ends run and move config to output folder
         """
+
+        output_folder = os.path.join(
+            OUTPUT_FOLDER,
+            name_of_folder(self.config_folder)
+        )
+        move_folder(self.config_folder, output_folder)
