@@ -8,20 +8,10 @@
 
 """ Power-up your machine to solve GAME models """
 
-import os
 import time
 
+from config import CONFIG_FOLDER, SEC_BETWEEN_RUNS
 from model import Gamer
-
-BIG_NUMBER = 3 * 10 ** 4
-THREADS_COUNT = 7
-PROCESSES_COUNT = 1
-CONFIG_FOLDER = os.path.join(
-    os.getenv("HOME"),
-    "tmp",
-    "game"
-)
-SEC_BETWEEN_RUNS = 2
 
 
 def main():

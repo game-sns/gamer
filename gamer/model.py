@@ -9,23 +9,25 @@
 """ GAME models """
 
 import json
+import os
 from threading import Thread
 
-from utils import get_files, run_game
+from utils import run_game, get_folders
 
 
 class GameConfig(object):
     """ Config files for GAME models """
 
-    def __init__(self, config_file):
+    def __init__(self, config_folder):
         """
-        :param config_file: str
+        :param config_folder: str
             Path to config file
         """
 
         object.__init__(self)
 
-        self.config_file = config_file
+        self.folder = config_folder
+        self.file = os.path.join(config_folder, "data.json") or None
         self.raw_data = None
         self.parse()
 
@@ -36,10 +38,15 @@ class GameConfig(object):
         """
 
         if self.raw_data is None:
-            with open(self.config_file, "r") as in_file:
-                self.raw_data = json.loads(
-                    in_file.read()
-                )  # read and return json object
+            try:
+                with open(self.file, "r") as in_file:
+                    self.raw_data = json.loads(
+                        in_file.read()
+                    )  # read and return json object
+            except Exception as e:
+                print str(e)
+                print "Cannot parse raw data of folder", self.folder, \
+                    "(should be", self.file, ")"
 
         return self.raw_data
 
@@ -87,9 +94,8 @@ class Gamer(object):
             Scans config folder and finds config files
         """
 
-        self.configs = get_files(self.config_folder, ending="json")
         self.configs = [
-            GameConfig(config) for config in self.configs
+            GameConfig(config) for config in get_folders(self.config_folder)
         ]
 
     def run(self):
@@ -105,3 +111,9 @@ class Gamer(object):
 
         for thread in threads:  # wait until all are done
             thread.join()
+
+    def end_run(self):
+        """
+        :return: void
+            Ends run and move config to ouput folder
+        """

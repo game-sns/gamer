@@ -83,6 +83,21 @@ def get_files(path, ending):
     ]
 
 
+def get_folders(path):
+    """
+    :param path: str
+        Path to folder
+    :param ending: str
+        Ending of files to be selected
+    :return: [] of str
+        List of files found (recursively) not hidden
+    """
+
+    return [
+        f for f in os.listdir(path) if os.path.isdir(f)
+    ]
+
+
 def write_data_to_json(data, output_file):
     """
     :param data: list of {} or {}
