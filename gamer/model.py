@@ -30,7 +30,7 @@ class GameConfig(object):
         self.folder = config_folder
         self.file = os.path.join(config_folder, "data.json") or None
         self.raw_data = None
-        self.parse()
+        self.raw_data = self.parse()
 
     def parse(self):
         """
@@ -74,6 +74,7 @@ class GameConfig(object):
                self.get_arg("additional labels"), \
                self.get_arg("InputFile"), \
                self.get_arg("ErrorFile"), \
+               self.get_arg("LabelsFile"), \
                self.get_arg("UploadFolder")
 
 
@@ -100,6 +101,7 @@ class Gamer(object):
         self.configs = [
             GameConfig(config) for config in get_folders(self.config_folder)
         ]
+        print "Found", len(self.configs), "config"
 
     def run(self):
         threads = [
@@ -115,7 +117,7 @@ class Gamer(object):
         for thread in threads:  # wait until all are done
             thread.join()
 
-        self.end_run()
+        # todo self.end_run()
 
     def end_run(self):
         """
@@ -127,4 +129,8 @@ class Gamer(object):
             OUTPUT_FOLDER,
             name_of_folder(self.config_folder)
         )
-        move_folder(self.config_folder, output_folder)
+        for config in self.configs:
+            if not os.path.exists(output_folder):
+                os.makedirs(output_folder)
+
+            move_folder(config.folder, output_folder)

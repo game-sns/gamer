@@ -25,7 +25,7 @@ def main():
         gamer.parse_configs()
         gamer.run()
 
-        print "Resting", SEC_BETWEEN_RUNS, "seconds before checking again ..."
+        print time.time()
         time.sleep(SEC_BETWEEN_RUNS)
 
 

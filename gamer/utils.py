@@ -93,7 +93,8 @@ def get_folders(path):
     """
 
     return [
-        f for f in os.listdir(path) if os.path.isdir(f)
+        os.path.join(path, f) for f in os.listdir(path)
+        if os.path.isdir(os.path.join(path, f))
     ]
 
 
@@ -115,7 +116,7 @@ def write_data_to_json(data, output_file):
         )
 
 
-def run_game(labels, additional_features, input_file, errors_file,
+def run_game(labels, additional_features, input_file, errors_file, labels_file,
              output_folder):
     output_filename = os.path.join(output_folder, "output_ml.dat")
     driver = Game(
@@ -124,21 +125,11 @@ def run_game(labels, additional_features, input_file, errors_file,
         manual_input=False,
         verbose=True,
         inputs_file=input_file,
-        errors_file=errors_file
+        errors_file=errors_file,
+        labels_file=labels_file
     )
-    driver.run()
 
-    output_filename = os.path.join(output_folder,
-                                   "output_ml_additional.dat")
-    driver.run_additional_labels(
-        additional_features=additional_features,
-        labels_file=os.path.join(
-            os.getcwd(),
-            "library",
-            "additional_labels.dat"
-        ),
-        output_filename=output_filename
-    )
+    driver.run()
 
 
 def name_of_folder(path):
