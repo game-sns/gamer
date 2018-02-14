@@ -10,9 +10,16 @@
 
 import json
 
+from datetime import datetime
+
 
 def get_pretty_date(dt):
     return dt.strftime("%H:%M:%S")
+
+
+def get_current_datetime():
+    now = datetime.now()
+    return now.strftime("%c")
 
 
 def write_data_to_json(data, output_file):

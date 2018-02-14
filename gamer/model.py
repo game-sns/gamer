@@ -11,7 +11,7 @@
 import json
 import os
 import time
-from threading import Thread
+from multiprocessing import Process
 
 from game.models import Game
 
@@ -64,7 +64,7 @@ class Runner(object):
                 print "\tlabels file:", self.driver.filename_library
                 print "\toutput file:", self.driver.output_filename
 
-            # self.driver.run()
+            self.driver.run()
         except Exception as e:
             self.successful_run = False
             print(time.time(), self.email, "stopped working due to", e)
@@ -82,10 +82,10 @@ class Runner(object):
                     print "\tadditional features:", self.additional_features
                     print "\toutput file:", self.output_extra_filename
 
-                # self.driver.run_additional_labels(
-                #     additional_features=self.additional_features,
-                #     output_filename=self.output_extra_filename
-                # )
+                self.driver.run_additional_labels(
+                    additional_features=self.additional_features,
+                    output_filename=self.output_extra_filename
+                )
             except Exception as e:
                 self.successful_run = False
                 print(
@@ -205,17 +205,9 @@ class Gamer(object):
         for runner in self.runners:
             runner.start()
 
-        threads = [
-            Thread(
-                target=runner.run
-            ) for runner in self.runners
-        ]
-
-        for thread in threads:  # start
-            thread.start()
-
-        for thread in threads:  # wait until all are done
-            thread.join()
+        for runner in self.runners:
+            p = Process(target=runner.run)
+            p.start()
 
         for runner in self.runners:
             runner.end()

@@ -16,6 +16,7 @@ from email.mime.text import MIMEText
 from game.gmail import GMailApiOAuth, send_email
 
 # script settings
+
 THIS_FOLDER = os.path.dirname(os.path.realpath(__file__))
 OAUTH_FOLDER = os.path.join(THIS_FOLDER, ".user_credentials", "gmail")
 
