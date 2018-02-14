@@ -10,11 +10,103 @@
 
 import json
 import os
+import time
 from threading import Thread
 
+from game.models import Game
+
 from config import OUTPUT_FOLDER
-from gamer.utils.files import get_folders, name_of_folder, move_folder
-from gamer.utils.games import run_game
+from mailer import notify_user_of_start, notify_user_of_end
+from utils.files import get_folders, name_of_folder, move_folder
+
+
+class Runner(object):
+    """ Runs GAME models """
+
+    def __init__(self, labels, additional_features, input_file, errors_file,
+                 labels_file,
+                 output_folder, email, verbose=True):
+        object.__init__(self)
+
+        self.output_filename = os.path.join(output_folder, "output_ml.dat")
+        self.output_extra_filename = os.path.join(output_folder,
+                                                  "output_ml_additional.dat")
+        self.additional_features = additional_features
+
+        self.driver = Game(
+            labels,
+            output_filename=self.output_filename,
+            manual_input=False,
+            verbose=True,
+            inputs_file=input_file,
+            errors_file=errors_file,
+            labels_file=labels_file
+        )
+        self.email = email
+        self.verbose = verbose
+        self.successful_run = False
+
+    def start(self):
+        self.successful_run = notify_user_of_start(self.email)
+
+    def run(self):
+        self.start()
+        self.run_labels()
+        self.run_additional_labels()
+        self.end()
+
+    def run_labels(self):
+        try:
+            if self.verbose:
+                print time.time(), "starting GAME driver:"
+                print "\tlabels:", self.driver.labels
+                print "\tinput file:", self.driver.filename_int
+                print "\terrors file:", self.driver.filename_err
+                print "\tlabels file:", self.driver.filename_library
+                print "\toutput file:", self.driver.output_filename
+
+            self.driver.run()
+        except Exception as e:
+            self.successful_run = False
+            print(time.time(), self.email, "stopped working due to", e)
+
+    def run_additional_labels(self):
+        if self.additional_features:
+            try:
+                if self.verbose:
+                    print time.time(), "starting GAME driver (additional labels):"
+                    print "\tadditional features:", self.additional_features
+                    print "\toutput file:", self.output_extra_filename
+
+                self.driver.run_additional_labels(
+                    additional_features=self.additional_features,
+                    output_filename=self.output_extra_filename
+                )
+
+            except Exception as e:
+                self.successful_run = False
+                print(
+                    time.time(), self.email,
+                    "(additional) stopped working due to", e
+                )
+
+    def end(self):
+        notify_user_of_end(
+            self.email,
+            self.successful_run,
+            self.output_filename,
+            "",  # todo debug file
+            self.output_extra_filename
+        )
+
+
+def run_game(labels, additional_features, input_file, errors_file, labels_file,
+             output_folder, email):
+    runner = Runner(
+        labels, additional_features, input_file, errors_file, labels_file,
+        output_folder, email
+    )
+    runner.run()
 
 
 class GameConfig(object):
@@ -81,7 +173,7 @@ class GameConfig(object):
 
 
 class Gamer(object):
-    """ He who runs GAME models """
+    """ Controls GAME models """
 
     def __init__(self, config_folder):
         """
