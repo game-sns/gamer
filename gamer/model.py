@@ -28,9 +28,9 @@ class Runner(object):
                  output_folder, email, verbose=True):
         object.__init__(self)
 
+        self.output_folder = output_folder
         self.output_filename = os.path.join(output_folder, "output_ml.dat")
-        self.output_extra_filename = os.path.join(output_folder,
-                                                  "output_ml_additional.dat")
+        self.output_extra_filename = None
         self.labels = labels
         self.additional_features = additional_features
 
@@ -74,6 +74,11 @@ class Runner(object):
     def run_additional_labels(self):
         if self.additional_features:
             try:
+                self.output_extra_filename = os.path.join(
+                    self.output_folder,
+                    "output_ml_additional.dat"
+                )
+
                 if self.verbose:
                     print time.time(), "starting GAME driver (additional labels):"
                     print "\tadditional features:", self.additional_features
@@ -83,7 +88,6 @@ class Runner(object):
                     additional_features=self.additional_features,
                     output_filename=self.output_extra_filename
                 )
-
             except Exception as e:
                 self.successful_run = False
                 print(

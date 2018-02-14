@@ -108,7 +108,7 @@ def notify_user_of_start(recipient):
 
 
 def notify_user_of_end(recipient, success, output_file,
-                       debug_file, extra_output=None):
+                       debug_file, extra_output):
     """
     :param recipient: str
         Email of recipient
@@ -132,8 +132,8 @@ def notify_user_of_end(recipient, success, output_file,
                                                "<li><a href='" + str(
         output_file) + "'>output file</a></li>"
 
-    if extra_output:
-        "<li><a href='" + str(
+    if extra_output is not None:
+        msg += "<li><a href='" + str(
             extra_output) + "'>additional output file</a></li>"
 
     msg += "</ul><br>"
