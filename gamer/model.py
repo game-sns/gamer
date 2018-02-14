@@ -13,7 +13,8 @@ import os
 from threading import Thread
 
 from config import OUTPUT_FOLDER
-from utils import run_game, get_folders, name_of_folder, move_folder
+from gamer.utils.files import get_folders, name_of_folder, move_folder
+from gamer.utils.games import run_game
 
 
 class GameConfig(object):
