@@ -10,6 +10,7 @@
 
 import json
 import os
+import shutil
 import time
 from multiprocessing import Process
 
@@ -17,7 +18,7 @@ from game.models import Game
 
 from config import OUTPUT_FOLDER
 from mailer import notify_user_of_start, notify_user_of_end
-from utils.files import get_folders, name_of_folder, move_folder
+from utils.files import get_folders, name_of_folder
 
 
 class Runner(object):
@@ -51,8 +52,9 @@ class Runner(object):
         self.successful_run = notify_user_of_start(self.email)
 
     def run(self):
-        self.run_labels()
-        self.run_additional_labels()
+        pass
+        # self.run_labels()
+        # self.run_additional_labels()
 
     def run_labels(self):
         try:
@@ -212,7 +214,7 @@ class Gamer(object):
         for runner in self.runners:
             runner.end()
 
-        # todo self.end_run()
+        self.end_run()
 
     def end_run(self):
         """
@@ -220,12 +222,9 @@ class Gamer(object):
             Ends run and move config to output folder
         """
 
-        output_folder = os.path.join(
-            OUTPUT_FOLDER,
-            name_of_folder(self.config_folder)
-        )
         for config in self.configs:
-            if not os.path.exists(output_folder):
-                os.makedirs(output_folder)
-
-            move_folder(config.folder, output_folder)
+            output_folder = os.path.join(
+                OUTPUT_FOLDER,
+                name_of_folder(config.folder)
+            )
+            shutil.move(config.folder, output_folder)
