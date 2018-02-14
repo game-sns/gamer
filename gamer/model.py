@@ -31,6 +31,7 @@ class Runner(object):
         self.output_filename = os.path.join(output_folder, "output_ml.dat")
         self.output_extra_filename = os.path.join(output_folder,
                                                   "output_ml_additional.dat")
+        self.labels = labels
         self.additional_features = additional_features
 
         self.driver = Game(
@@ -59,7 +60,7 @@ class Runner(object):
         try:
             if self.verbose:
                 print time.time(), "starting GAME driver:"
-                print "\tlabels:", self.driver.labels
+                print "\tlabels:", self.labels
                 print "\tinput file:", self.driver.filename_int
                 print "\terrors file:", self.driver.filename_err
                 print "\tlabels file:", self.driver.filename_library

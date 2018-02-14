@@ -74,8 +74,9 @@ def notify_user(raw_message, recipient, subject):
     """
 
     try:
-        raw_message += "</br></br>With <3 the GAME team"
-        msg = get_msg("sirfoga@protonmail.com", raw_message, subject)
+        raw_message += "<br><br>With <3, the GAME team"
+        raw_message = "Hi!<br><br>" + raw_message
+        msg = get_msg(recipient, raw_message, subject)
         send_msg(msg)
         return True
     except Exception as e:
@@ -96,13 +97,12 @@ def notify_user_of_start(recipient):
         True iff successful notification
     """
 
-    msg = "Hi!</br>" \
-          "Your GAME models are on their way!</br>" \
+    msg = "Your GAME models are on their way! " \
           "This email has been sent just to notify you that all files have" \
-          "been parsed correctly and your results are coming.</br>" \
+          " been parsed correctly and your results are coming.<br>" \
           "You will receive another email with the link to download your " \
           "results. As of now, have a nice day!" \
-          "</br>" \
+          "<br>" \
           "Bye!"
     return notify_user(msg, recipient, "GAME | start")
 
@@ -120,14 +120,13 @@ def notify_user_of_end(recipient, success, output_file,
         True iff successful notification
     """
 
-    msg = "Hi!</br>"
     if success:
-        msg += "Your GAME models have run successfully!</br>"
+        msg = "Your GAME models have run successfully!<br>"
     else:
-        msg += "Sorry, but we encountered some errors while running your " \
-               "models.</br>"
+        msg = "Sorry, but we encountered some errors while running your " \
+              "models.<br>"
 
-    msg += "Here are your output files:</br>" \
+    msg += "Here are your output files:<br>" \
            "<ul>" \
            "<li><a href='" + str(debug_file) + "'>debug file</a></li>" \
                                                "<li><a href='" + str(
@@ -137,9 +136,9 @@ def notify_user_of_end(recipient, success, output_file,
         "<li><a href='" + str(
             extra_output) + "'>additional output file</a></li>"
 
-    msg += "</ul></br>"
+    msg += "</ul><br>"
     msg += "Make sure to download these files as soon as possible because we " \
-           "they will be erased within two weeks!</br>" \
+           "they will be erased within two weeks!<br>" \
            "Hoping the results match your predictions ... see you soon!"
 
     return notify_user(msg, recipient, "GAME | your results")
