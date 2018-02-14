@@ -73,20 +73,11 @@ def notify_user(raw_message, recipient, subject):
         True iff successful notification
     """
 
-    try:
-        raw_message += "<br><br>With <3, the GAME team"
-        raw_message = "Hi!<br><br>" + raw_message
-        msg = get_msg(recipient, raw_message, subject)
-        send_msg(msg)
-        return True
-    except Exception as e:
-        print(
-            "Cannot send email to",
-            recipient,
-            "with message\n```\n", raw_message, "\n```\nbecause of", e
-        )
-
-    return False
+    raw_message += "<br><br>With <3, the GAME team"
+    raw_message = "Hi!<br><br>" + raw_message
+    msg = get_msg(recipient, raw_message, subject)
+    send_msg(msg)
+    return True
 
 
 def notify_user_of_start(recipient):

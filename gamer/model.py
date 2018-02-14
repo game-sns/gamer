@@ -51,10 +51,8 @@ class Runner(object):
         self.successful_run = notify_user_of_start(self.email)
 
     def run(self):
-        self.start()
         self.run_labels()
         self.run_additional_labels()
-        self.end()
 
     def run_labels(self):
         try:
@@ -66,7 +64,7 @@ class Runner(object):
                 print "\tlabels file:", self.driver.filename_library
                 print "\toutput file:", self.driver.output_filename
 
-            self.driver.run()
+            # self.driver.run()
         except Exception as e:
             self.successful_run = False
             print(time.time(), self.email, "stopped working due to", e)
@@ -84,10 +82,10 @@ class Runner(object):
                     print "\tadditional features:", self.additional_features
                     print "\toutput file:", self.output_extra_filename
 
-                self.driver.run_additional_labels(
-                    additional_features=self.additional_features,
-                    output_filename=self.output_extra_filename
-                )
+                # self.driver.run_additional_labels(
+                #     additional_features=self.additional_features,
+                #     output_filename=self.output_extra_filename
+                # )
             except Exception as e:
                 self.successful_run = False
                 print(
@@ -103,15 +101,6 @@ class Runner(object):
             "",  # todo debug file
             self.output_extra_filename
         )
-
-
-def run_game(labels, additional_features, input_file, errors_file, labels_file,
-             output_folder, email):
-    runner = Runner(
-        labels, additional_features, input_file, errors_file, labels_file,
-        output_folder, email
-    )
-    runner.run()
 
 
 class GameConfig(object):
@@ -190,6 +179,7 @@ class Gamer(object):
 
         self.config_folder = config_folder
         self.configs = []
+        self.runners = []
 
     def parse_configs(self):
         """
@@ -198,16 +188,27 @@ class Gamer(object):
         """
 
         self.configs = [
-            GameConfig(config) for config in get_folders(self.config_folder)
+            GameConfig(config)
+            for config in get_folders(self.config_folder)
         ]
+        self.create_gamers()
         print "Found", len(self.configs), "config"
 
+    def create_gamers(self):
+        self.runners = [
+            Runner(
+                *config.get_args()
+            ) for config in self.configs
+        ]
+
     def run(self):
+        for runner in self.runners:
+            runner.start()
+
         threads = [
             Thread(
-                target=run_game,
-                args=config.get_args()
-            ) for config in self.configs
+                target=runner.run
+            ) for runner in self.runners
         ]
 
         for thread in threads:  # start
@@ -215,6 +216,9 @@ class Gamer(object):
 
         for thread in threads:  # wait until all are done
             thread.join()
+
+        for runner in self.runners:
+            runner.end()
 
         # todo self.end_run()
 
