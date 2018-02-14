@@ -18,4 +18,4 @@ CONFIG_FOLDER = os.path.join(
 OUTPUT_FOLDER = os.path.join(
     os.getenv("HOME"), "Coding", "Python", "game", "gamecourse", "outputs"
 )
-SEC_BETWEEN_RUNS = 2
+SEC_BETWEEN_RUNS = 10

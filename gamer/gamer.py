@@ -20,13 +20,13 @@ def main():
         Runs core algorithm
     """
 
-    while True:
-        gamer = Gamer(CONFIG_FOLDER)
-        gamer.parse_configs()
-        gamer.run()
+    # while True:
+    print time.time(), "started new scan"
+    gamer = Gamer(CONFIG_FOLDER)
+    gamer.parse_configs()
+    gamer.run()
 
-        print time.time()
-        time.sleep(SEC_BETWEEN_RUNS)
+    time.sleep(SEC_BETWEEN_RUNS)
 
 
 if __name__ == "__main__":

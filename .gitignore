@@ -1,5 +1,6 @@
 .idea
 gamer/library
+gamer/.user_credentials
 
 ### PyCharm ###
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio and Webstorm
@@ -300,3 +301,4 @@ fabric.properties
 modules.xml
 .idea/misc.xml 
 *.ipr
+gamer/output/

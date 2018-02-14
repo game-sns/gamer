@@ -75,7 +75,8 @@ class GameConfig(object):
                self.get_arg("InputFile"), \
                self.get_arg("ErrorFile"), \
                self.get_arg("LabelsFile"), \
-               self.get_arg("UploadFolder")
+               self.get_arg("UploadFolder"), \
+               self.get_arg("Email")
 
 
 class Gamer(object):
