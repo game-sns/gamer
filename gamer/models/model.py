@@ -14,39 +14,37 @@ import shutil
 import time
 from multiprocessing import Process
 
-from game.models import Game
+from game.models.core import Game
 
 from gamer.config import OUTPUT_FOLDER
-from gamer.emails import notify_user_of_start, notify_user_of_end
+from gamer.emails.mailer import notify_user_of_start, notify_user_of_end
 from gamer.models.logs import Logger
 from gamer.utils.files import get_folders, name_of_folder
 
 
-class Runner(object):
+class Runner(Logger):
     """ Runs GAME models """
 
-    def __init__(self, labels, additional_features, input_file, errors_file,
+    def __init__(self, features, additional_features, inputs_file, errors_file,
                  labels_file,
                  output_folder, email, verbose=True):
-        object.__init__(self)
+        Logger.__init__(self, verbose)
 
         self.output_folder = output_folder
-        self.output_filename = os.path.join(output_folder, "output_ml.dat")
+        self.output_filename = os.path.join(output_folder, "output.dat")
         self.output_extra_filename = None
-        self.labels = labels
+        self.labels = features
         self.additional_features = additional_features
 
         self.driver = Game(
-            labels,
-            output_filename=self.output_filename,
-            manual_input=False,
-            verbose=True,
-            inputs_file=input_file,
-            errors_file=errors_file,
-            labels_file=labels_file
+            features,
+            inputs_file,
+            errors_file,
+            labels_file,
+            self.output_folder,
+            verbose=False
         )
         self.email = email
-        self.verbose = verbose
         self.successful_run = False
 
     def start(self):
@@ -58,18 +56,17 @@ class Runner(object):
 
     def run_labels(self):
         try:
-            if self.verbose:
-                print time.time(), "starting GAME driver:"
-                print "\tlabels:", self.driver.features
-                print "\tinput file:", self.driver.filename_int
-                print "\terrors file:", self.driver.filename_err
-                print "\tlabels file:", self.driver.filename_library
-                print "\toutput file:", self.driver.output_filename
+            self.log("Starting GAME driver:")
+            self.log("labels:", self.driver.features)
+            self.log("input file:", self.driver.inputs_file)
+            self.log("errors file:", self.driver.errors_file)
+            self.log("labels file:", self.driver.labels_file)
+            self.log("output file:", self.driver.output_filename)
 
-            self.driver.launch_models()
+            self.driver.run()
         except Exception as e:
             self.successful_run = False
-            print(time.time(), self.email, "stopped working due to", e)
+            self.log(self.email, "stopped GAME due to", e)
 
     def run_additional_labels(self):
         if self.additional_features:
@@ -80,9 +77,9 @@ class Runner(object):
                 )
 
                 if self.verbose:
-                    print time.time(), "starting GAME driver (additional labels):"
-                    print "\tadditional features:", self.additional_features
-                    print "\toutput file:", self.output_extra_filename
+                    self.log("starting GAME driver (additional labels):")
+                    self.log("additional features:", self.additional_features)
+                    self.log("output file:", self.output_extra_filename)
 
                 self.driver.run_additional_labels(
                     additional_features=self.additional_features,
@@ -90,10 +87,7 @@ class Runner(object):
                 )
             except Exception as e:
                 self.successful_run = False
-                print(
-                    time.time(), self.email,
-                    "(additional) stopped working due to", e
-                )
+                self.log(self.email, "(additional) stopped GAME due to", e)
 
     def end(self):
         notify_user_of_end(
@@ -105,7 +99,7 @@ class Runner(object):
         )
 
 
-class GameConfig(object):
+class GameConfig(Logger):
     """ Config files for GAME models """
 
     def __init__(self, config_folder):
@@ -114,7 +108,7 @@ class GameConfig(object):
             Path to config file
         """
 
-        object.__init__(self)
+        Logger.__init__(self, True)
 
         self.folder = config_folder
         self.file = os.path.join(config_folder, "data.json") or None
@@ -134,9 +128,7 @@ class GameConfig(object):
                         in_file.read()
                     )  # read and return json object
             except Exception as e:
-                print str(e)
-                print "Cannot parse raw data of folder", self.folder, \
-                    "(should be", self.file, ")"
+                self.log("Cannot parse raw data of", self.file, ", due to", e)
 
         return self.raw_data
 
