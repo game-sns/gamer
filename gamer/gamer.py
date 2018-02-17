@@ -1,4 +1,4 @@
-# !/usr/bin/python3
+# !/usr/bin/python2
 # coding: utf-8
 
 # Copyright YYYY AUTHORS
@@ -10,7 +10,7 @@
 
 
 from config import CONFIG_FOLDER, SEC_BETWEEN_RUNS
-from models.model import Gamer
+from models.core import Gamer
 
 
 if __name__ == "__main__":
