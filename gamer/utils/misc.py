@@ -38,3 +38,14 @@ def write_data_to_json(data, output_file):
             out,  # file handler
             indent=4, sort_keys=True  # pretty print
         )
+
+
+def get_actual_class_name(class_name):
+    """
+    :param class_name: str
+        Class name of object
+    :return: str
+        Actual class name (without all path)
+    """
+
+    return str(type(class_name)).split("'")[-2].split(".")[-1]
