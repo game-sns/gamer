@@ -18,6 +18,7 @@ from game.models import Game
 
 from gamer.config import OUTPUT_FOLDER
 from gamer.emails import notify_user_of_start, notify_user_of_end
+from gamer.models.logs import Logger
 from gamer.utils.files import get_folders, name_of_folder
 
 
@@ -65,7 +66,7 @@ class Runner(object):
                 print "\tlabels file:", self.driver.filename_library
                 print "\toutput file:", self.driver.output_filename
 
-            self.driver.run()
+            self.driver.launch_models()
         except Exception as e:
             self.successful_run = False
             print(time.time(), self.email, "stopped working due to", e)
@@ -167,21 +168,22 @@ class GameConfig(object):
                self.get_arg("Email")
 
 
-class Gamer(object):
+class Gamer(Logger):
     """ Controls GAME models """
 
-    def __init__(self, config_folder):
+    def __init__(self, config_folder, sec_between_runs):
         """
         :param config_folder: str
             Path to folder containing config files
         """
 
-        object.__init__(self)
+        Logger.__init__(self, True)
 
         self.config_folder = config_folder
         self.configs = []
         self.runners = []
         self.slaves = []
+        self.sleep_time = float(sec_between_runs)
 
     def parse_configs(self):
         """
@@ -194,7 +196,7 @@ class Gamer(object):
             for config in get_folders(self.config_folder)
         ]
         self.create_gamers()
-        print "Found", len(self.configs), "config"
+        self.log("Found", len(self.configs), "config")
 
     def create_gamers(self):
         self.runners = [
@@ -206,7 +208,7 @@ class Gamer(object):
             Process(target=runner.run) for runner in self.runners
         ]
 
-    def run(self):
+    def launch_models(self):
         for runner in self.runners:
             runner.start()
 
@@ -233,3 +235,10 @@ class Gamer(object):
                 name_of_folder(config.folder)
             )
             shutil.move(config.folder, output_folder)
+            self.log("Written output to", output_folder)
+
+    def run(self):
+        while True:
+            self.parse_configs()
+            self.launch_models()
+            time.sleep(self.sleep_time)

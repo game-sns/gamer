@@ -8,7 +8,6 @@
 
 """ Power-up your machine to solve GAME models """
 
-import time
 
 from config import CONFIG_FOLDER, SEC_BETWEEN_RUNS
 from models.model import Gamer
@@ -20,12 +19,8 @@ def main():
         Runs core algorithm
     """
 
-    while True:
-        print time.time(), "started new scan"
-        gamer = Gamer(CONFIG_FOLDER)
-        gamer.parse_configs()
-        gamer.run()
-        time.sleep(SEC_BETWEEN_RUNS)
+    gamer = Gamer(CONFIG_FOLDER, SEC_BETWEEN_RUNS)
+    gamer.run()
 
 
 if __name__ == "__main__":
