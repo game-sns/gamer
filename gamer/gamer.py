@@ -11,7 +11,7 @@
 import time
 
 from config import CONFIG_FOLDER, SEC_BETWEEN_RUNS
-from model import Gamer
+from models.model import Gamer
 
 
 def main():

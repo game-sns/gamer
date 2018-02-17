@@ -16,9 +16,9 @@ from multiprocessing import Process
 
 from game.models import Game
 
-from config import OUTPUT_FOLDER
-from mailer import notify_user_of_start, notify_user_of_end
-from utils.files import get_folders, name_of_folder
+from gamer.config import OUTPUT_FOLDER
+from gamer.emails import notify_user_of_start, notify_user_of_end
+from gamer.utils.files import get_folders, name_of_folder
 
 
 class Runner(object):
@@ -52,15 +52,14 @@ class Runner(object):
         self.successful_run = notify_user_of_start(self.email)
 
     def run(self):
-        pass
-        # self.run_labels()
-        # self.run_additional_labels()
+        self.run_labels()
+        # todo self.run_additional_labels()
 
     def run_labels(self):
         try:
             if self.verbose:
                 print time.time(), "starting GAME driver:"
-                print "\tlabels:", self.labels
+                print "\tlabels:", self.driver.features
                 print "\tinput file:", self.driver.filename_int
                 print "\terrors file:", self.driver.filename_err
                 print "\tlabels file:", self.driver.filename_library
@@ -182,6 +181,7 @@ class Gamer(object):
         self.config_folder = config_folder
         self.configs = []
         self.runners = []
+        self.slaves = []
 
     def parse_configs(self):
         """
@@ -202,14 +202,19 @@ class Gamer(object):
                 *config.get_args()
             ) for config in self.configs
         ]
+        self.slaves = [
+            Process(target=runner.run) for runner in self.runners
+        ]
 
     def run(self):
         for runner in self.runners:
             runner.start()
 
-        for runner in self.runners:
-            p = Process(target=runner.run)
-            p.start()
+        for slave in self.slaves:  # start
+            slave.start()
+
+        for slave in self.slaves:  # wait until all are done todo find better
+            slave.join()
 
         for runner in self.runners:
             runner.end()
