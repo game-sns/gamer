@@ -8,9 +8,9 @@
 
 """ Example of run """
 
-from gamer.config import CONFIG_FOLDER, SEC_BETWEEN_RUNS
+from gamer.config import GAMES_FOLDER, SEC_BETWEEN_RUNS
 from gamer.models.core import Gamer
 
 if __name__ == "__main__":
-    gamer = Gamer(CONFIG_FOLDER, SEC_BETWEEN_RUNS)
+    gamer = Gamer(GAMES_FOLDER, SEC_BETWEEN_RUNS)
     gamer.run()

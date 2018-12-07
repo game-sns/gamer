@@ -12,7 +12,7 @@ import os
 
 THREADS_COUNT = 7
 PROCESSES_COUNT = 1
-CONFIG_FOLDER = os.path.join(
+GAMES_FOLDER = os.path.join(
     os.getenv("HOME"), "Coding", "Python", "game", "gamecourse", "uploads"
 )
 OUTPUT_FOLDER = os.path.join(

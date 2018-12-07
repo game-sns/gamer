@@ -14,9 +14,9 @@ import shutil
 import time
 from multiprocessing import Process
 
-from game.models.core import Game
+from game.models import Game, FilesConfig, LabelsConfig
 
-from gamer.config import OUTPUT_FOLDER
+from gamer.config import OUTPUT_FOLDER, PROCESSES_COUNT
 from gamer.emails.mailer import notify_user_of_start, notify_user_of_end
 from gamer.models.logs import Logger
 from gamer.utils.files import get_folders, name_of_folder
@@ -36,13 +36,23 @@ class Runner(Logger):
         self.labels = features
         self.additional_features = additional_features
 
-        self.driver = Game(
-            features,
+        files = FilesConfig(
             inputs_file,
             errors_file,
             labels_file,
-            self.output_folder,
-            verbose=False
+            output_folder,
+            True
+        )
+        labels = LabelsConfig(
+            features,  # todo check format, should be ['G0', 'N' ..]
+            additional_features  # todo check format, should be ['G0', 'N' ..]
+        )
+
+        self.driver = Game(
+            files,
+            PROCESSES_COUNT,
+            10000,
+            labels
         )
         self.email = email
         self.successful_run = False
@@ -51,43 +61,19 @@ class Runner(Logger):
         self.successful_run = notify_user_of_start(self.email)
 
     def run(self):
-        self.run_labels()
-        # todo self.run_additional_labels()
-
-    def run_labels(self):
         try:
             self.log("Starting GAME driver:")
-            self.log("labels:", self.driver.features)
-            self.log("input file:", self.driver.inputs_file)
-            self.log("errors file:", self.driver.errors_file)
-            self.log("labels file:", self.driver.labels_file)
-            self.log("output file:", self.driver.output_filename)
+            self.log("labels:", self.driver.labels_config.output)
+            self.log("input file:", self.driver.filename_config.filename_int)
+            self.log("errors file:", self.driver.filename_config.filename_err)
+            self.log("labels file:",
+                     self.driver.filename_config.filename_libraru)
+            self.log("output file:", self.driver.filename_config.output_folder)
 
             self.driver.run()
         except Exception as e:
             self.successful_run = False
             self.log(self.email, "stopped GAME due to", e)
-
-    def run_additional_labels(self):
-        if self.additional_features:
-            try:
-                self.output_extra_filename = os.path.join(
-                    self.output_folder,
-                    "output_ml_additional.dat"
-                )
-
-                if self.verbose:
-                    self.log("starting GAME driver (additional labels):")
-                    self.log("additional features:", self.additional_features)
-                    self.log("output file:", self.output_extra_filename)
-
-                self.driver.run_additional_labels(
-                    additional_features=self.additional_features,
-                    output_filename=self.output_extra_filename
-                )
-            except Exception as e:
-                self.successful_run = False
-                self.log(self.email, "(additional) stopped GAME due to", e)
 
     def end(self):
         notify_user_of_end(
