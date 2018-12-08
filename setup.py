@@ -27,6 +27,10 @@ setup(
     url="https://github.com/sirfoga/gamer",
     packages=find_packages(exclude=["tests"]),
     include_package_data=True,
+    install_requires=[
+        'google_api_python_client',
+        'oauth2client'
+    ],
     entry_points={
         "console_scripts": ["gamer = gamer.main:cli"]
     }
