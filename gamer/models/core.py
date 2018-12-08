@@ -94,7 +94,32 @@ class GameConfig(Logger):
         self.folder = config_folder
         self.file = os.path.join(config_folder, "data.json") or None
         self.raw_data = None
-        self.raw_data = self.parse()
+        self.parse()
+
+    def get_labels(self):
+        for label in self.raw_data['labels']:
+            if label.lower() == 'g0':
+                yield 'G0'
+
+            if label.lower() == 'n':
+                yield 'n'
+
+            if label.lower() == 'nh':
+                yield 'NH'
+
+            if label.lower() == 'u':
+                yield 'U'
+
+            if label.lower() == 'z':
+                yield 'Z'
+
+    def get_additional_labels(self):
+        for label in self.raw_data['additional labels']:
+            if label.lower() == 'av':
+                yield 'Av'
+
+            if label.lower() == 'fesc':
+                yield 'fesc'
 
     def parse(self):
         """
@@ -110,6 +135,9 @@ class GameConfig(Logger):
                     )  # read and return json object
             except Exception as e:
                 self.log("Cannot parse raw data of", self.file, ", due to", e)
+
+        self.raw_data['labels'] = self.get_labels()
+        self.raw_data['additional labels'] = self.get_additional_labels()
 
         return self.raw_data
 
