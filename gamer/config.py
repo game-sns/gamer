@@ -15,3 +15,4 @@ OUTPUT_FOLDER = os.path.join(
     os.getenv("HOME"), "Work", "sns", "game", "code", "gamecourse", "outputs"
 )
 SEC_BETWEEN_RUNS = 10
+MAX_PARALLEL_GAMES = 30

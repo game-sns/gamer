@@ -11,7 +11,7 @@ from multiprocessing import Process
 
 from game.models import Game, FilesConfig, LabelsConfig
 
-from gamer.config import OUTPUT_FOLDER, PROCESSES_COUNT
+from gamer.config import OUTPUT_FOLDER, PROCESSES_COUNT, MAX_PARALLEL_GAMES
 from gamer.emails.mailer import notify_user_of_start, notify_user_of_end
 from gamer.models.logs import Logger
 from gamer.utils.files import get_folders, name_of_folder
@@ -56,6 +56,7 @@ class Runner(Logger):
         self.successful_run = notify_user_of_start(self.email)
 
     def run(self):
+        # todo add limits on files
         try:
             self.log("Starting GAME driver:")
             self.log("labels:", self.driver.labels_config.output)
@@ -66,6 +67,7 @@ class Runner(Logger):
             self.log("output file:", self.driver.filename_config.output_folder)
 
             self.driver.run()
+            self.successful_run = True
         except Exception as e:
             self.successful_run = False
             self.log(self.email, "stopped GAME due to", e)
@@ -195,7 +197,7 @@ class Gamer(Logger):
         self.configs = [
             GameConfig(config)
             for config in get_folders(self.config_folder)
-        ]
+                       ][:MAX_PARALLEL_GAMES]  # take first 30 configs at most
         self.create_gamers()
         self.log("Found", len(self.configs), "config")
 
@@ -214,9 +216,10 @@ class Gamer(Logger):
             runner.start()
 
         for slave in self.slaves:  # start
+            # todo efficient memory usage must be controlled at OS-level
             slave.start()
 
-        for slave in self.slaves:  # wait until all are done todo find better
+        for slave in self.slaves:  # wait until all are done
             slave.join()
 
         for runner in self.runners:
