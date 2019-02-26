@@ -2,9 +2,7 @@
 
 *Power-up your machine to solve GAME models*
 
-[![Python version](https://img.shields.io/badge/Python-2.7-blue.svg)](https://www.python.org/download/releases/2.7.1/)
-
-[![Open Source Love](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://opensource.org/licenses/Apache-2.0) [![Contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/sirfoga/gamer/issues) [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
+[![Python version](https://img.shields.io/badge/Python-3.7-blue.svg)](https://www.python.org/download/releases/3.7.1/) [![Open Source Love](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://opensource.org/licenses/Apache-2.0) [![Contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/game-sns/gamer/issues)
 
 
 ## Key Features
@@ -27,15 +25,11 @@ No need to install anything out of the ordinary, just the standard python lib an
 
 
 ## Questions and issues
-The [github issue tracker](https://github.com/sirfoga/gamer/issues) is **only** for bug reports and feature requests. Anything else, such as questions for help in using the library, should be posted as [pull requests](https://github.com/sirfoga/gamer/pulls).
+The [github issue tracker](https://github.com/game-sns/gamer/issues) is **only** for bug reports and feature requests. Anything else, such as questions for help in using the library, should be posted as [pull requests](https://github.com/game-sns/gamer/pulls).
 
 
 ## Contributing
-[Fork](https://github.com/sirfoga/gamer/fork) | Patch | Push | [Pull request](https://github.com/sirfoga/gamer/pulls)
-
-
-## License
-[Apache License](http://www.apache.org/licenses/LICENSE-2.0) Version 2.0, January 2004
+[Fork](https://github.com/game-sns/gamer/fork) | Patch | Push | [Pull request](https://github.com/game-sns/gamer/pulls)
 
 
 ## You may also like...
