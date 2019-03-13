@@ -57,6 +57,7 @@ class Runner(Logger):
 
     def run(self):
         # todo add limits on files
+        
         try:
             self.log("Starting GAME driver:")
             self.log("labels:", self.driver.labels_config.output)
@@ -71,6 +72,8 @@ class Runner(Logger):
         except Exception as e:
             self.successful_run = False
             self.log(self.email, "stopped GAME due to", e)
+
+        self.end()
 
     def end(self):
         notify_user_of_end(
@@ -222,9 +225,6 @@ class Gamer(Logger):
         for slave in self.slaves:  # wait until all are done
             slave.join()
 
-        for runner in self.runners:
-            runner.end()
-
         self.end_run()
 
     def end_run(self):
@@ -238,6 +238,7 @@ class Gamer(Logger):
                 OUTPUT_FOLDER,
                 name_of_folder(config.folder)
             )
+            # todo or delete ??
             shutil.move(config.folder, output_folder)
             self.log("Written output to", output_folder)
 
