@@ -45,10 +45,10 @@ class Runner(Logger):
 
         self.driver = Game(
             files,
-            PROCESSES_COUNT,
+            PROCESSES_COUNT,  # todo count cores available and use them all
             10000,
             labels
-        )
+        )  # todo add more args ??
         self.email = email
         self.successful_run = False
 
@@ -241,6 +241,8 @@ class Gamer(Logger):
             shutil.move(config.folder, output_folder)
             self.log("Written output to", output_folder)
 
+    # todo adapt for multiple scheduling strategy
+    # todo make Runner (i.e Game adapt to # of cores available)
     def run(self):
         while True:
             self.parse_configs()

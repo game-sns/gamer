@@ -11,6 +11,7 @@ from email.mime.text import MIMEText
 
 # script settings
 from gamer.emails.gmail import GMailApiOAuth, send_email
+from models.errors import GamerException, GamerErrorsCode
 
 THIS_FOLDER = os.path.dirname(os.path.realpath(__file__))
 OAUTH_FOLDER = os.path.join(THIS_FOLDER, ".user_credentials", "gmail")
@@ -61,18 +62,30 @@ def send_msg(msg):
 
 def notify_user(raw_message, recipient, subject):
     """
-    :param recipient: str
-        Email of recipient
     :param raw_message: str
         HTML message
+    :param recipient: str
+        Email of recipient
     :return: bool
         True iff successful notification
     """
 
     raw_message += "<br><br>With <3, the GAME team"
     raw_message = "Hi!<br><br>" + raw_message
-    msg = get_msg(recipient, raw_message, subject)
-    send_msg(msg)
+
+    try:
+        msg = get_msg(recipient, raw_message, subject)
+    except:
+        exception = GamerException.build('Cannot build email',
+                                         GamerErrorsCode.EMAIL_NOT_WELL_FORMAT)
+        raise exception
+
+    try:
+        send_msg(msg)
+    except:
+        exception = GamerException.build_email_exception(recipient)
+        raise exception
+
     return True
 
 
