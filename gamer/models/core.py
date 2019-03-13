@@ -3,52 +3,73 @@
 
 """ GAME models """
 
+import datetime
 import json
 import os
 import shutil
 import time
 from multiprocessing import Process
 
+import psutil
+from game.errors import GameException
 from game.models import Game, FilesConfig, LabelsConfig
 
-from gamer.config import OUTPUT_FOLDER, PROCESSES_COUNT, MAX_PARALLEL_GAMES
+from gamer.config import OUTPUT_FOLDER, MAX_PARALLEL_GAMES, \
+    SAFETY_CORES
 from gamer.emails.mailer import notify_user_of_start, notify_user_of_end
 from gamer.models.logs import Logger
 from gamer.utils.files import get_folders, name_of_folder
 
 
+def get_available_cores(sample_time=3, min_cpu=75):
+    """
+    :param sample_time: measure CPU % this number of seconds
+    :param min_cpu: min CPU % for a core to be unavailable
+    """
+
+    cores_percent = psutil.cpu_percent(interval=sample_time, percpu=True)
+    available_cores = [
+        core
+        for core in cores_percent
+        if core < min_cpu
+    ]
+    n_available = len(available_cores) - SAFETY_CORES
+
+    return max(0, n_available)  # if less than 0, return 0
+
+
 class Runner(Logger):
     """ Runs GAME models """
 
-    def __init__(self, features, additional_features, inputs_file, errors_file,
+    def __init__(self, features, inputs_file, errors_file,
                  labels_file,
-                 output_folder, email, verbose=True):
+                 output_folder, optional_files, n_repetitions,
+                 n_estimators, email,
+                 verbose=True):
         Logger.__init__(self, verbose)
 
         self.output_folder = output_folder
-        self.output_filename = os.path.join(output_folder, "output.dat")
         self.output_extra_filename = None
         self.labels = features
-        self.additional_features = additional_features
 
         files = FilesConfig(
             inputs_file,
             errors_file,
             labels_file,
             output_folder,
-            True
+            optional_files
         )
         labels = LabelsConfig(
-            features,  # todo check format, should be ['G0', 'N' ..]
-            additional_features  # todo check format, should be ['G0', 'N' ..]
+            features
         )
 
         self.driver = Game(
             files,
-            PROCESSES_COUNT,  # todo count cores available and use them all
-            10000,
+            get_available_cores(),  # count cores available
+            n_repetitions,
+            n_estimators,
             labels
-        )  # todo add more args ??
+        )
         self.email = email
         self.successful_run = False
 
@@ -56,15 +77,13 @@ class Runner(Logger):
         self.successful_run = notify_user_of_start(self.email)
 
     def run(self):
-        # todo add limits on files
-        
         try:
             self.log("Starting GAME driver:")
             self.log("labels:", self.driver.labels_config.output)
             self.log("input file:", self.driver.filename_config.filename_int)
             self.log("errors file:", self.driver.filename_config.filename_err)
             self.log("labels file:",
-                     self.driver.filename_config.filename_libraru)
+                     self.driver.filename_config.filename_library)
             self.log("output file:", self.driver.filename_config.output_folder)
 
             self.driver.run()
@@ -79,14 +98,16 @@ class Runner(Logger):
         notify_user_of_end(
             self.email,
             self.successful_run,
-            self.output_filename,
-            "",  # todo debug file
+            self.output_folder,
             self.output_extra_filename
         )
 
 
 class GameConfig(Logger):
     """ Config files for GAME models """
+
+    EXCEPTION_FILES_FORMAT = 'Cannot parse {}'
+    DATE_TIME_FORMAT = '%Y-%d-%m %H:%M:%S'
 
     def __init__(self, config_folder):
         """
@@ -99,7 +120,10 @@ class GameConfig(Logger):
         self.folder = config_folder
         self.file = os.path.join(config_folder, "data.json") or None
         self.raw_data = None
-        self.parse()
+
+        self._parse()
+        self.creation_time = datetime.datetime.strptime(self.raw_data['time'],
+                                                        self.DATE_TIME_FORMAT)
 
     def get_labels(self):
         for label in self.raw_data['labels']:
@@ -118,15 +142,13 @@ class GameConfig(Logger):
             if label.lower() == 'z':
                 yield 'Z'
 
-    def get_additional_labels(self):
-        for label in self.raw_data['additional labels']:
             if label.lower() == 'av':
                 yield 'Av'
 
             if label.lower() == 'fesc':
                 yield 'fesc'
 
-    def parse(self):
+    def _parse(self):
         """
         :return: void
             Parses raw data
@@ -138,12 +160,13 @@ class GameConfig(Logger):
                     self.raw_data = json.loads(
                         in_file.read()
                     )  # read and return json object
-            except Exception as e:
-                self.log("Cannot parse raw data of", self.file, ", due to", e)
+            except:
+                exception = GameException.build_files_exception(
+                    self.EXCEPTION_FILES_FORMAT.format(self.file)
+                )
+                raise exception
 
-        self.raw_data['labels'] = self.get_labels()
-        self.raw_data['additional labels'] = self.get_additional_labels()
-
+        self.raw_data['labels'] = list(self.get_labels())
         return self.raw_data
 
     def get_arg(self, key):
@@ -166,11 +189,13 @@ class GameConfig(Logger):
         """
 
         return self.get_arg("labels"), \
-               self.get_arg("additional labels"), \
                self.get_arg("InputFile"), \
                self.get_arg("ErrorFile"), \
                self.get_arg("LabelsFile"), \
                self.get_arg("UploadFolder"), \
+               self.get_arg('OptionalFiles'), \
+               self.get_arg('nRepetitions'), \
+               self.get_arg('nEstimators'), \
                self.get_arg("Email")
 
 
@@ -200,7 +225,9 @@ class Gamer(Logger):
         self.configs = [
             GameConfig(config)
             for config in get_folders(self.config_folder)
-                       ][:MAX_PARALLEL_GAMES]  # take first 30 configs at most
+        ]
+        self.configs = sorted(self.configs, key=lambda x: x.creation_time)
+        self.configs = self.configs[:MAX_PARALLEL_GAMES]
         self.create_gamers()
         self.log("Found", len(self.configs), "config")
 
@@ -219,7 +246,6 @@ class Gamer(Logger):
             runner.start()
 
         for slave in self.slaves:  # start
-            # todo efficient memory usage must be controlled at OS-level
             slave.start()
 
         for slave in self.slaves:  # wait until all are done
@@ -238,12 +264,9 @@ class Gamer(Logger):
                 OUTPUT_FOLDER,
                 name_of_folder(config.folder)
             )
-            # todo or delete ??
             shutil.move(config.folder, output_folder)
             self.log("Written output to", output_folder)
 
-    # todo adapt for multiple scheduling strategy
-    # todo make Runner (i.e Game adapt to # of cores available)
     def run(self):
         while True:
             self.parse_configs()

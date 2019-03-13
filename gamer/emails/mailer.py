@@ -107,13 +107,12 @@ def notify_user_of_start(recipient):
     return notify_user(msg, recipient, "GAME | start")
 
 
-def notify_user_of_end(recipient, success, output_file,
-                       debug_file, extra_output):
+def notify_user_of_end(recipient, success, output_folder, extra_output):
     """
     :param recipient: str
         Email of recipient
-    :param output_file: str
-        Path to output file
+    :param output_folder: str
+        Path to output folder
     :param extra_output: str
         Path to output file with additional labels
     :return: bool
@@ -126,11 +125,8 @@ def notify_user_of_end(recipient, success, output_file,
         msg = "Sorry, but we encountered some errors while running your " \
               "models.<br>"
 
-    msg += "Here are your output files:<br>" \
-           "<ul>" \
-           "<li><a href='" + str(debug_file) + "'>debug file</a></li>" \
-                                               "<li><a href='" + str(
-        output_file) + "'>output file</a></li>"
+    msg += "Here are your output files: <a href='" + str(output_folder) + \
+           "'>output folder</a>."
 
     if extra_output is not None:
         msg += "<li><a href='" + str(

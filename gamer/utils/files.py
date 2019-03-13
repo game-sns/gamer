@@ -82,7 +82,8 @@ def get_folders(path):
     """
 
     return [
-        os.path.join(path, f) for f in os.listdir(path)
+        os.path.join(path, f)
+        for f in os.listdir(path)
         if os.path.isdir(os.path.join(path, f))
     ]
 

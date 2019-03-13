@@ -29,7 +29,7 @@ setup(
     include_package_data=True,
     install_requires=[
         'google_api_python_client',
-        'oauth2client'
+        'oauth2client', 'psutil'
     ],
     entry_points={
         "console_scripts": ["gamer = gamer.main:cli"]
