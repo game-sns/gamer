@@ -11,7 +11,8 @@ import time
 from multiprocessing import Process
 
 import psutil
-from game.errors import GameException
+from astraeus.models.astraeus import Astraeus
+from game.behaviour import GameError
 from game.models import Game, FilesConfig, LabelsConfig
 
 from gamer.config import OUTPUT_FOLDER, MAX_PARALLEL_GAMES, \
@@ -76,12 +77,13 @@ class Runner(Logger):
         self.institution = institution
         self.successful_run = False
         self.download_token = None
+        self.output_archive = None
 
     def start(self):
         self.successful_run = notify_user_of_start(self.email,
                                                    self.name_surname)
         notify_admins(self.email, self.name_surname, self.institution,
-                      'on_start')
+                      self.output_folder, 'on_start')
 
     def run(self):
         self.start()
@@ -108,14 +110,36 @@ class Runner(Logger):
 
     def _create_download_token(self):
         if not self.download_token:
-            self.download_token = '42'  # todo create properly
+            astraeus = Astraeus(
+                port=11212,
+                expire_seconds=((60 * 60) * 24) * 10  # 10 days
+            )
+            token = astraeus.save(self.output_archive)
+            self.download_token = token
 
         return self.download_token
 
     def get_download_link(self):
         return DOWNLOAD_URL.format(self._create_download_token())
 
+    def _create_archive(self):
+        inner_output_folder = os.path.join(self.output_folder, 'out')
+        os.makedirs(inner_output_folder)
+
+        for f in os.listdir(self.output_folder):  # move to output folder
+            complete_f = os.path.join(self.output_folder, f)
+            if os.path.isfile(complete_f):
+                if complete_f.endswith('.dat'):  # is output
+                    shutil.move(complete_f, inner_output_folder)
+
+        archive_f = os.path.join(self.output_folder, 'out.zip')
+        shutil.make_archive(archive_f, 'zip', inner_output_folder)
+
+        self.output_archive = archive_f
+
     def end(self):
+        self._create_archive()
+
         notify_user_of_end(
             self.email,
             self.name_surname,
@@ -125,10 +149,10 @@ class Runner(Logger):
 
         if self.successful_run:
             notify_admins(self.email, self.name_surname, self.institution,
-                          'on_success')
+                          self.output_folder, 'on_success')
         else:
             notify_admins(self.email, self.name_surname, self.institution,
-                          'on_fail')
+                          self.output_folder, 'on_fail')
 
 
 class GameConfig(Logger):
@@ -189,7 +213,7 @@ class GameConfig(Logger):
                         in_file.read()
                     )  # read and return json object
             except:
-                exception = GameException.build_files_exception(
+                exception = GameError.build_files_exception(
                     self.EXCEPTION_FILES_FORMAT.format(self.file)
                 )
                 raise exception

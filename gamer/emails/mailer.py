@@ -158,7 +158,7 @@ def notify_user_of_end(recipient, name_surname, success, out_link):
     return notify_user(msg, recipient, name_surname, "GAME | your results")
 
 
-def notify_admins(user_email, user_name, user_school, event):
+def notify_admins(user_email, user_name, user_school, user_folder, event):
     for admin in ADMIN_CONFIG:
         if event in admin['events']:
             now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -189,6 +189,8 @@ def notify_admins(user_email, user_name, user_school, event):
             else:  # shouldn't arrive here
                 msg = 'At {} something happened relative to {}' \
                     .format(now, user)
+
+            msg += '</br>User folder is located at {}'.format(user_folder)
 
             notify_user(
                 msg, admin['email'], admin['name'],
