@@ -6,6 +6,7 @@
 
 import base64
 import datetime
+import json
 import locale
 import os
 from email.mime.text import MIMEText
@@ -16,6 +17,7 @@ from models.errors import GamerException, GamerErrorsCode
 
 THIS_FOLDER = os.path.dirname(os.path.realpath(__file__))
 OAUTH_FOLDER = os.path.join(THIS_FOLDER, ".user_credentials", "gmail")
+CONFIG_FOLDER = os.path.join(THIS_FOLDER, "config")
 
 # email settings
 EMAIL_DRIVER = GMailApiOAuth(
@@ -24,8 +26,10 @@ EMAIL_DRIVER = GMailApiOAuth(
     os.path.join(OAUTH_FOLDER, "gmail.json")
 ).create_driver()
 EMAIL_SENDER = "game.cosmosns@gmail.com"
-ADMIN_CONFIG = []  # todo
+ADMIN_CONFIG_FILE = os.path.join(CONFIG_FOLDER, 'admins.json')
+ADMIN_CONFIG = json.load(open(ADMIN_CONFIG_FILE, 'r'))
 HELP_EMAIL = ADMIN_CONFIG[0]
+# todo hooks for ["on_download", "on_missing_additional", "on_chunks"] events
 
 # setting locale
 locale.setlocale(locale.LC_ALL, "it_IT.UTF-8")  # italian

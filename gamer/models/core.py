@@ -16,7 +16,8 @@ from game.models import Game, FilesConfig, LabelsConfig
 
 from gamer.config import OUTPUT_FOLDER, MAX_PARALLEL_GAMES, \
     SAFETY_CORES, DOWNLOAD_URL
-from gamer.emails.mailer import notify_user_of_start, notify_user_of_end
+from gamer.emails.mailer import notify_user_of_start, notify_user_of_end, \
+    notify_admins
 from gamer.models.logs import Logger
 from gamer.utils.files import get_folders, name_of_folder
 
@@ -79,6 +80,8 @@ class Runner(Logger):
     def start(self):
         self.successful_run = notify_user_of_start(self.email,
                                                    self.name_surname)
+        notify_admins(self.email, self.name_surname, self.institution,
+                      'on_start')
 
     def run(self):
         self.start()
@@ -92,8 +95,11 @@ class Runner(Logger):
                      self.driver.filename_config.filename_library)
             self.log("output file:", self.driver.filename_config.output_folder)
 
-            self.driver.run()
-            self.successful_run = True
+            game_behaviour = self.driver.run()
+            if game_behaviour.is_error():
+                self.successful_run = False
+            else:
+                self.successful_run = True
         except Exception as e:
             self.successful_run = False
             self.log(self.email, "stopped GAME due to", e)
@@ -116,6 +122,13 @@ class Runner(Logger):
             self.successful_run,
             self.get_download_link()
         )
+
+        if self.successful_run:
+            notify_admins(self.email, self.name_surname, self.institution,
+                          'on_success')
+        else:
+            notify_admins(self.email, self.name_surname, self.institution,
+                          'on_fail')
 
 
 class GameConfig(Logger):
