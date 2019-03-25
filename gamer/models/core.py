@@ -77,6 +77,8 @@ class Runner(Logger):
         self.successful_run = notify_user_of_start(self.email)
 
     def run(self):
+        self.start()
+
         try:
             self.log("Starting GAME driver:")
             self.log("labels:", self.driver.labels_config.output)
@@ -238,13 +240,11 @@ class Gamer(Logger):
             ) for config in self.configs
         ]
         self.slaves = [
-            Process(target=runner.run) for runner in self.runners
+            Process(target=runner.run)
+            for runner in self.runners
         ]
 
     def launch_models(self):
-        for runner in self.runners:
-            runner.start()
-
         for slave in self.slaves:  # start
             slave.start()
 

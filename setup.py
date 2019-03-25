@@ -19,12 +19,11 @@ DESCRIPTION = \
 
 setup(
     name="gamer",
-    version="1.0",
+    version="1.2",
     description=LITTLE_DESCRIPTION,
     long_description=DESCRIPTION,
-    license="Apache License, Version 2.0",
     keywords="game server multiprocess",
-    url="https://github.com/sirfoga/gamer",
+    url="https://github.com/game-sns/gamer",
     packages=find_packages(exclude=["tests"]),
     include_package_data=True,
     install_requires=[
