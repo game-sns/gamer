@@ -5,6 +5,7 @@
 """ Send emails """
 
 import base64
+import datetime
 import locale
 import os
 from email.mime.text import MIMEText
@@ -23,6 +24,8 @@ EMAIL_DRIVER = GMailApiOAuth(
     os.path.join(OAUTH_FOLDER, "gmail.json")
 ).create_driver()
 EMAIL_SENDER = "game.cosmosns@gmail.com"
+ADMIN_CONFIG = []  # todo
+HELP_EMAIL = ADMIN_CONFIG[0]
 
 # setting locale
 locale.setlocale(locale.LC_ALL, "it_IT.UTF-8")  # italian
@@ -60,7 +63,7 @@ def send_msg(msg):
     )
 
 
-def notify_user(raw_message, recipient, subject):
+def notify_user(raw_message, recipient, name_surname, subject):
     """
     :param raw_message: str
         HTML message
@@ -70,8 +73,8 @@ def notify_user(raw_message, recipient, subject):
         True iff successful notification
     """
 
-    raw_message += "<br><br>With <3, the GAME team"
-    raw_message = "Hi!<br><br>" + raw_message
+    raw_message = "Dear {},</br></br>".format(name_surname) + raw_message
+    raw_message += "</br></br>Regards,</br></br>GAME developers",  # end
 
     try:
         msg = get_msg(recipient, raw_message, subject)
@@ -89,7 +92,7 @@ def notify_user(raw_message, recipient, subject):
     return True
 
 
-def notify_user_of_start(recipient):
+def notify_user_of_start(recipient, name_surname):
     """
     :param recipient: str
         Email of recipient
@@ -97,44 +100,93 @@ def notify_user_of_start(recipient):
         True iff successful notification
     """
 
-    msg = "Your GAME models are on their way! " \
+    msg = "GAME has started crunching your input. " \
           "This email has been sent just to notify you that all files have" \
-          " been parsed correctly and your results are coming.<br>" \
-          "You will receive another email with the link to download your " \
-          "results. As of now, have a nice day!" \
-          "<br>" \
-          "Bye!"
-    return notify_user(msg, recipient, "GAME | start")
+          " been parsed correctly and the results are being computed.</br>" \
+          "You will receive another email with the link to download the " \
+          "output. As of now, have a nice day!"
+    return notify_user(msg, recipient, name_surname, "GAME | start")
 
 
-def notify_user_of_end(recipient, success, output_folder, extra_output):
+def notify_user_of_missing_additional(recipient, name_surname):
     """
     :param recipient: str
         Email of recipient
-    :param output_folder: str
-        Path to output folder
-    :param extra_output: str
-        Path to output file with additional labels
     :return: bool
         True iff successful notification
     """
 
+    msg = "This email is just a notification that the additional files will " \
+          "be missing: this is because it would require too much memory. When " \
+          "done, we'll email you again with the link to download the output " \
+          "files. "
+    return notify_user(msg, recipient, name_surname, "GAME | additional files")
+
+
+def notify_user_of_chunks(recipient, name_surname, n_chunks):
+    """
+    :param recipient: str
+        Email of recipient
+    :return: bool
+        True iff successful notification
+    """
+
+    link_to_readme = 'https://game.sns.it/static/data/readme_GAME.pdf'
+    msg = "GAME tried to crunch your files but encountered an error. In " \
+          "particular it seems that the input files did not follow the " \
+          "guidelines specified in the <a href='{}'>README</a>. We advise to " \
+          "split your input files into {} chunks." \
+        .format(link_to_readme, n_chunks)
+    return notify_user(msg, recipient, name_surname, "GAME | input error")
+
+
+def notify_user_of_end(recipient, name_surname, success, out_link):
     if success:
-        msg = "Your GAME models have run successfully!<br>"
+        msg = "GAME completed successfully. You can download the output files " \
+              "<a href='{}'>here</a>.</br>The link will expire in {} " \
+              "days: please be sure to download the output!" \
+            .format(out_link, 10)
     else:
-        msg = "Sorry, but we encountered some errors while running your " \
-              "models.<br>"
+        msg = "GAME did not complete: an unknown error occurred. Please " \
+              "contact <a href='mailto:{}'>{}</a>." \
+            .format(HELP_EMAIL['EMAIL'], HELP_EMAIL['name'])
 
-    msg += "Here are your output files: <a href='" + str(output_folder) + \
-           "'>output folder</a>."
+    return notify_user(msg, recipient, name_surname, "GAME | your results")
 
-    if extra_output is not None:
-        msg += "<li><a href='" + str(
-            extra_output) + "'>additional output file</a></li>"
 
-    msg += "</ul><br>"
-    msg += "Make sure to download these files as soon as possible because we " \
-           "they will be erased within two weeks!<br>" \
-           "Hoping the results match your predictions ... see you soon!"
+def notify_admins(user_email, user_name, user_school, event):
+    for admin in ADMIN_CONFIG:
+        if event in admin['events']:
+            now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            user = '{} ({} of {})'.format(
+                user_name, user_email, user_school
+            )
 
-    return notify_user(msg, recipient, "GAME | your results")
+            if event == 'on_start':
+                msg = 'At {} GAME started running input submitted by {}.' \
+                    .format(now, user)
+            elif event == 'on_fail':
+                msg = 'At {} GAME failed running input submitted by {}!' \
+                    .format(now, user)
+            elif event == 'on_success':
+                msg = 'At {} GAME completed input submitted by {}.' \
+                    .format(now, user)
+            elif event == 'on_download':
+                msg = 'At {} {} downloaded output.' \
+                    .format(now, user)
+            elif event == 'on_missing_additional':
+                msg = 'At {} GAME removed additional option from input ' \
+                      'submitted by {}.' \
+                    .format(now, user)
+            elif event == 'on_chunks':
+                msg = 'At {} GAME failed: input submitted by {} has to be ' \
+                      'chunked!' \
+                    .format(now, user)
+            else:  # shouldn't arrive here
+                msg = 'At {} something happened relative to {}' \
+                    .format(now, user)
+
+            notify_user(
+                msg, admin['email'], admin['name'],
+                "GAME admin | {} event".format(event)
+            )

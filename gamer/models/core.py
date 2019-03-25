@@ -15,7 +15,7 @@ from game.errors import GameException
 from game.models import Game, FilesConfig, LabelsConfig
 
 from gamer.config import OUTPUT_FOLDER, MAX_PARALLEL_GAMES, \
-    SAFETY_CORES
+    SAFETY_CORES, DOWNLOAD_URL
 from gamer.emails.mailer import notify_user_of_start, notify_user_of_end
 from gamer.models.logs import Logger
 from gamer.utils.files import get_folders, name_of_folder
@@ -44,7 +44,7 @@ class Runner(Logger):
     def __init__(self, features, inputs_file, errors_file,
                  labels_file,
                  output_folder, optional_files, n_repetitions,
-                 n_estimators, email,
+                 n_estimators, email, name_surname, institution,
                  verbose=True):
         Logger.__init__(self, verbose)
 
@@ -71,10 +71,14 @@ class Runner(Logger):
             labels
         )
         self.email = email
+        self.name_surname = name_surname
+        self.institution = institution
         self.successful_run = False
+        self.download_token = None
 
     def start(self):
-        self.successful_run = notify_user_of_start(self.email)
+        self.successful_run = notify_user_of_start(self.email,
+                                                   self.name_surname)
 
     def run(self):
         self.start()
@@ -96,12 +100,21 @@ class Runner(Logger):
 
         self.end()
 
+    def _create_download_token(self):
+        if not self.download_token:
+            self.download_token = '42'  # todo create properly
+
+        return self.download_token
+
+    def get_download_link(self):
+        return DOWNLOAD_URL.format(self._create_download_token())
+
     def end(self):
         notify_user_of_end(
             self.email,
+            self.name_surname,
             self.successful_run,
-            self.output_folder,
-            self.output_extra_filename
+            self.get_download_link()
         )
 
 
@@ -198,7 +211,9 @@ class GameConfig(Logger):
                self.get_arg('OptionalFiles'), \
                self.get_arg('nRepetitions'), \
                self.get_arg('nEstimators'), \
-               self.get_arg("Email")
+               self.get_arg("Email"), \
+               self.get_arg("name_surname"), \
+               self.get_arg("institution")
 
 
 class Gamer(Logger):
