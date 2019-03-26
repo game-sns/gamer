@@ -158,7 +158,7 @@ class GameConfig(Logger):
     """ Config files for GAME models """
 
     EXCEPTION_FILES_FORMAT = 'Cannot parse {}'
-    DATE_TIME_FORMAT = '%Y-%d-%m %H:%M:%S'
+    DATE_TIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 
     def __init__(self, config_folder):
         """
@@ -168,14 +168,20 @@ class GameConfig(Logger):
 
         Logger.__init__(self, True)
 
-        self.folder = config_folder
-        self.file = os.path.join(config_folder, "data.json") or None
-        self.raw_data = None
-        self.n_reps = None
+        try:
+            self.folder = config_folder
+            self.file = os.path.join(config_folder, "data.json") or None
+            self.raw_data = None
+            self.n_reps = None
 
-        self._parse()
-        self.creation_time = datetime.datetime.strptime(self.raw_data['time'],
-                                                        self.DATE_TIME_FORMAT)
+            self._parse()
+            self.creation_time = datetime.datetime.strptime(
+                self.raw_data['time'],
+                self.DATE_TIME_FORMAT)
+        except:
+            notify_admins('unknown', 'unknown', 'unknown',
+                          config_folder, 'on_parse_error',
+                          location=config_folder)
 
     def get_labels(self):
         for label in self.raw_data['labels']:
@@ -301,11 +307,10 @@ class Gamer(Logger):
 
     def launch_models(self):
         for i, slave in enumerate(self.slaves):  # start
-            self.log('started {} slave'.format(i))
+            self.log('started {}-th slave'.format(i))
             slave.start()
 
         for i, slave in enumerate(self.slaves):  # wait until all are done
-            self.log('will join {} slave'.format(i))
             slave.join()
 
         self.end_run()
@@ -316,7 +321,6 @@ class Gamer(Logger):
             Ends run and move config to output folder
         """
 
-        self.log('ending run')
         for config in self.configs:
             output_folder = os.path.join(
                 OUTPUT_FOLDER,
@@ -328,10 +332,7 @@ class Gamer(Logger):
 
     def run(self):
         while True:
-            self.log('parsing...')
             self.parse_configs()
-
-            self.log('launching GAMEs...')
             self.launch_models()
 
             self.log('will sleep for {} seconds'.format(self.sleep_time))

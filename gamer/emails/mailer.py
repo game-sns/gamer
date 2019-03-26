@@ -13,7 +13,7 @@ from email.mime.text import MIMEText
 
 # script settings
 from gamer.emails.gmail import GMailApiOAuth, send_email
-from models.errors import GamerException, GamerErrorsCode
+from gamer.models.errors import GamerException, GamerErrorsCode
 
 THIS_FOLDER = os.path.dirname(os.path.realpath(__file__))
 OAUTH_FOLDER = os.path.join(THIS_FOLDER, ".user_credentials", "gmail")
@@ -78,7 +78,7 @@ def notify_user(raw_message, recipient, name_surname, subject):
     """
 
     raw_message = "Dear {},</br></br>".format(name_surname) + raw_message
-    raw_message += "</br></br>Regards,</br></br>GAME developers",  # end
+    raw_message += "</br></br>Regards,</br></br>GAME developers"  # end
 
     try:
         msg = get_msg(recipient, raw_message, subject)
