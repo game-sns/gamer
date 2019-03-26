@@ -9,6 +9,7 @@ import math
 import os
 import shutil
 import time
+import traceback
 from multiprocessing import Process
 
 import psutil
@@ -337,8 +338,13 @@ class Gamer(Logger):
 
     def run(self):
         while True:
-            self.parse_configs()
-            self.launch_models()
+            try:
+                self.parse_configs()
+                self.launch_models()
 
-            self.log('will sleep for {} seconds'.format(self.sleep_time))
+                self.log('will sleep for {} seconds'.format(self.sleep_time))
+            except Exception as e:
+                print e
+                traceback.print_exc()
+
             time.sleep(self.sleep_time)
