@@ -131,7 +131,7 @@ class Runner(Logger):
                 if complete_f.endswith('.dat'):  # is output
                     shutil.move(complete_f, inner_output_folder)
 
-        archive_f = os.path.join(self.output_folder, 'out.zip')
+        archive_f = os.path.join(self.output_folder, 'out')
         shutil.make_archive(archive_f, 'zip', inner_output_folder)
 
         self.output_archive = archive_f
@@ -148,7 +148,7 @@ class Runner(Logger):
 
         if self.successful_run:
             notify_admins(self.email, self.name_surname, self.institution,
-                          self.output_folder, 'on_success')
+                          None, 'on_success')
         else:
             notify_admins(self.email, self.name_surname, self.institution,
                           self.output_folder, 'on_fail')

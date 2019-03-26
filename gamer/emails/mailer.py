@@ -77,8 +77,8 @@ def notify_user(raw_message, recipient, name_surname, subject):
         True iff successful notification
     """
 
-    raw_message = "Dear {},</br></br>".format(name_surname) + raw_message
-    raw_message += "</br></br>Regards,</br></br>GAME developers"  # end
+    raw_message = "Dear {},<br><br>".format(name_surname) + raw_message
+    raw_message += "<br><br>Regards,<br><br>GAME developers"  # end
 
     try:
         msg = get_msg(recipient, raw_message, subject)
@@ -106,7 +106,7 @@ def notify_user_of_start(recipient, name_surname):
 
     msg = "GAME has started crunching your input. " \
           "This email has been sent just to notify you that all files have" \
-          " been parsed correctly and the results are being computed.</br>" \
+          " been parsed correctly and the results are being computed.<br>" \
           "You will receive another email with the link to download the " \
           "output. As of now, have a nice day!"
     return notify_user(msg, recipient, name_surname, "GAME | start")
@@ -147,7 +147,7 @@ def notify_user_of_chunks(recipient, name_surname, n_chunks):
 def notify_user_of_end(recipient, name_surname, success, out_link):
     if success:
         msg = "GAME completed successfully. You can download the output files " \
-              "<a href='{}'>here</a>.</br>The link will expire in {} " \
+              "<a href='{}'>here</a>.<br>The link will expire in {} " \
               "days: please be sure to download the output!" \
             .format(out_link, 10)
     else:
@@ -195,7 +195,8 @@ def notify_admins(user_email, user_name, user_school, user_folder, event,
                 msg = 'At {} something happened relative to {}' \
                     .format(now, user)
 
-            msg += '</br>User folder is located at {}'.format(user_folder)
+            if user_folder:
+                msg += '<br>User folder is located at {}'.format(user_folder)
 
             notify_user(
                 msg, admin['email'], admin['name'],
