@@ -80,7 +80,6 @@ class Runner(Logger):
         self.institution = institution
         self.successful_run = False
         self.download_token = None
-        self.output_archive = None
 
     def start(self):
         self.successful_run = notify_user_of_start(self.email,
@@ -132,7 +131,9 @@ class Runner(Logger):
                 if complete_f.endswith('.dat'):  # is output
                     shutil.move(complete_f, inner_output_folder)
 
-        shutil.make_archive(self.output_archive, 'zip', inner_output_folder)
+        ext = 'zip'
+        shutil.make_archive(self.output_archive, ext, inner_output_folder)
+        self.output_archive += ext  # add extension
 
     def end(self):
         self._create_archive()
