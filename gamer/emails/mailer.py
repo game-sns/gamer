@@ -153,7 +153,7 @@ def notify_user_of_end(recipient, name_surname, success, out_link):
     else:
         msg = "GAME did not complete: an unknown error occurred. Please " \
               "contact <a href='mailto:{}'>{}</a>." \
-            .format(HELP_EMAIL['EMAIL'], HELP_EMAIL['name'])
+            .format(HELP_EMAIL['email'], HELP_EMAIL['name'])
 
     return notify_user(msg, recipient, name_surname, "GAME | your results")
 

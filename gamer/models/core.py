@@ -14,7 +14,7 @@ from multiprocessing import Process
 
 import psutil
 from astraeus.core import Astraeus
-from game.behaviour import GameError, ok_status
+from game.behaviour import GameError
 from game.models import Game, FilesConfig, LabelsConfig
 
 from gamer.config import OUTPUT_FOLDER, MAX_PARALLEL_GAMES, \
@@ -68,7 +68,7 @@ class Runner(Logger):
             features
         )
 
-        self.max_cores = get_available_cores(),  # count cores available
+        self.max_cores = get_available_cores()  # count cores available
         self.driver = Game(
             files,
             self.max_cores,
@@ -96,7 +96,7 @@ class Runner(Logger):
                      self.max_cores)
             self.log("output:", self.output_folder)
 
-            game_behaviour = ok_status('wooow')  # todo self.driver.run()
+            game_behaviour = self.driver.run()
             if game_behaviour.is_error():
                 self.successful_run = False
             else:
