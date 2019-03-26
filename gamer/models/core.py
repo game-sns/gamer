@@ -47,12 +47,13 @@ class Runner(Logger):
 
     def __init__(self, features, inputs_file, errors_file,
                  labels_file,
-                 output_folder, optional_files, n_repetitions,
+                 output_folder, output_archive, optional_files, n_repetitions,
                  n_estimators, email, name_surname, institution,
                  verbose=True):
         Logger.__init__(self, verbose)
 
         self.output_folder = output_folder
+        self.output_archive = output_archive
         self.labels = features
 
         files = FilesConfig(
@@ -131,10 +132,7 @@ class Runner(Logger):
                 if complete_f.endswith('.dat'):  # is output
                     shutil.move(complete_f, inner_output_folder)
 
-        archive_f = os.path.join(self.output_folder, 'out')
-        shutil.make_archive(archive_f, 'zip', inner_output_folder)
-
-        self.output_archive = archive_f
+        shutil.make_archive(self.output_archive, 'zip', inner_output_folder)
 
     def end(self):
         self._create_archive()
@@ -248,11 +246,17 @@ class GameConfig(Logger):
             Args written in config file
         """
 
+        output_archive = os.path.join(
+            OUTPUT_FOLDER,
+            name_of_folder(self.folder)
+        )  # later on we'll add the extension
+
         return self.get_arg("labels"), \
                self.get_arg("InputFile"), \
                self.get_arg("ErrorFile"), \
                self.get_arg("LabelsFile"), \
                self.get_arg("OutputFolder"), \
+               output_archive, \
                self.get_arg('OptionalFiles'), \
                self.n_reps, \
                self.n_ests, \

@@ -28,4 +28,4 @@ class Logger:
         if self.verbose:
             now = datetime.now().strftime(LOG_TIME_FORMAT)
             content = " ".join([str(x) for x in content])
-            print now, self.class_name, ">>>", content, "\n"
+            print now, self.class_name, ">>>", content
