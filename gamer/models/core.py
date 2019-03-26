@@ -17,7 +17,7 @@ from game.behaviour import GameError, ok_status
 from game.models import Game, FilesConfig, LabelsConfig
 
 from gamer.config import OUTPUT_FOLDER, MAX_PARALLEL_GAMES, \
-    SAFETY_CORES, DOWNLOAD_URL
+    SAFETY_CORES, DOWNLOAD_URL, DONE_FOLDER
 from gamer.emails.mailer import notify_user_of_start, notify_user_of_end, \
     notify_admins
 from gamer.models.logs import Logger
@@ -133,7 +133,7 @@ class Runner(Logger):
 
         ext = 'zip'
         shutil.make_archive(self.output_archive, ext, inner_output_folder)
-        self.output_archive += ext  # add extension
+        self.output_archive += ('.' + ext)  # add extension
 
     def end(self):
         self._create_archive()
@@ -328,7 +328,7 @@ class Gamer(Logger):
 
         for config in self.configs:
             output_folder = os.path.join(
-                OUTPUT_FOLDER,
+                DONE_FOLDER,
                 name_of_folder(config.folder)
             )
 
