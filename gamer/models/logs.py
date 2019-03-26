@@ -7,7 +7,7 @@ from datetime import datetime
 
 from gamer.utils.misc import get_actual_class_name
 
-LOG_TIME_FORMAT = "%m-%d %H:%M:%S"
+LOG_TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
 
 class Logger:

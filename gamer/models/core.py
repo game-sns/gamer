@@ -5,14 +5,15 @@
 
 import datetime
 import json
+import math
 import os
 import shutil
 import time
 from multiprocessing import Process
 
 import psutil
-from astraeus.models.astraeus import Astraeus
-from game.behaviour import GameError
+from astraeus.core import Astraeus
+from game.behaviour import GameError, ok_status
 from game.models import Game, FilesConfig, LabelsConfig
 
 from gamer.config import OUTPUT_FOLDER, MAX_PARALLEL_GAMES, \
@@ -36,8 +37,9 @@ def get_available_cores(sample_time=3, min_cpu=75):
         if core < min_cpu
     ]
     n_available = len(available_cores) - SAFETY_CORES
-
-    return max(0, n_available)  # if less than 0, return 0
+    n_available = max(0, n_available)  # if less than 0, return 0
+    n_available = int(math.floor(n_available / MAX_PARALLEL_GAMES))
+    return n_available
 
 
 class Runner(Logger):
@@ -51,7 +53,6 @@ class Runner(Logger):
         Logger.__init__(self, verbose)
 
         self.output_folder = output_folder
-        self.output_extra_filename = None
         self.labels = features
 
         files = FilesConfig(
@@ -65,9 +66,10 @@ class Runner(Logger):
             features
         )
 
+        self.max_cores = get_available_cores(),  # count cores available
         self.driver = Game(
             files,
-            get_available_cores(),  # count cores available
+            self.max_cores,
             n_repetitions,
             n_estimators,
             labels
@@ -89,19 +91,16 @@ class Runner(Logger):
         self.start()
 
         try:
-            self.log("Starting GAME driver:")
-            self.log("labels:", self.driver.labels_config.output)
-            self.log("input file:", self.driver.filename_config.filename_int)
-            self.log("errors file:", self.driver.filename_config.filename_err)
-            self.log("labels file:",
-                     self.driver.filename_config.filename_library)
-            self.log("output file:", self.driver.filename_config.output_folder)
+            self.log("Starting GAME driver with at most {} cores",
+                     self.max_cores)
+            self.log("output:", self.output_folder)
 
-            game_behaviour = self.driver.run()
+            game_behaviour = ok_status('wooow')  # todo self.driver.run()
             if game_behaviour.is_error():
                 self.successful_run = False
             else:
                 self.successful_run = True
+            self.successful_run = True
         except Exception as e:
             self.successful_run = False
             self.log(self.email, "stopped GAME due to", e)
@@ -110,11 +109,11 @@ class Runner(Logger):
 
     def _create_download_token(self):
         if not self.download_token:
-            astraeus = Astraeus(
+            astraeus_client = Astraeus(
                 port=11212,
                 expire_seconds=((60 * 60) * 24) * 10  # 10 days
             )
-            token = astraeus.save(self.output_archive)
+            token = astraeus_client.save(self.output_archive)
             self.download_token = token
 
         return self.download_token
@@ -172,6 +171,7 @@ class GameConfig(Logger):
         self.folder = config_folder
         self.file = os.path.join(config_folder, "data.json") or None
         self.raw_data = None
+        self.n_reps = None
 
         self._parse()
         self.creation_time = datetime.datetime.strptime(self.raw_data['time'],
@@ -180,7 +180,7 @@ class GameConfig(Logger):
     def get_labels(self):
         for label in self.raw_data['labels']:
             if label.lower() == 'g0':
-                yield 'G0'
+                yield 'g0'
 
             if label.lower() == 'n':
                 yield 'n'
@@ -219,6 +219,8 @@ class GameConfig(Logger):
                 raise exception
 
         self.raw_data['labels'] = list(self.get_labels())
+        self.n_reps = 10000  # default
+        self.n_ests = 50  # default
         return self.raw_data
 
     def get_arg(self, key):
@@ -244,10 +246,10 @@ class GameConfig(Logger):
                self.get_arg("InputFile"), \
                self.get_arg("ErrorFile"), \
                self.get_arg("LabelsFile"), \
-               self.get_arg("UploadFolder"), \
+               self.get_arg("OutputFolder"), \
                self.get_arg('OptionalFiles'), \
-               self.get_arg('nRepetitions'), \
-               self.get_arg('nEstimators'), \
+               self.n_reps, \
+               self.n_ests, \
                self.get_arg("Email"), \
                self.get_arg("name_surname"), \
                self.get_arg("institution")
@@ -281,9 +283,10 @@ class Gamer(Logger):
             for config in get_folders(self.config_folder)
         ]
         self.configs = sorted(self.configs, key=lambda x: x.creation_time)
+        self.log("Found", len(self.configs), "config...")
         self.configs = self.configs[:MAX_PARALLEL_GAMES]
+        self.log("...selecting first", len(self.configs), "configs")
         self.create_gamers()
-        self.log("Found", len(self.configs), "config")
 
     def create_gamers(self):
         self.runners = [
@@ -297,10 +300,12 @@ class Gamer(Logger):
         ]
 
     def launch_models(self):
-        for slave in self.slaves:  # start
+        for i, slave in enumerate(self.slaves):  # start
+            self.log('started {} slave'.format(i))
             slave.start()
 
-        for slave in self.slaves:  # wait until all are done
+        for i, slave in enumerate(self.slaves):  # wait until all are done
+            self.log('will join {} slave'.format(i))
             slave.join()
 
         self.end_run()
@@ -311,16 +316,23 @@ class Gamer(Logger):
             Ends run and move config to output folder
         """
 
+        self.log('ending run')
         for config in self.configs:
             output_folder = os.path.join(
                 OUTPUT_FOLDER,
                 name_of_folder(config.folder)
             )
+
+            self.log('{} -> {}'.format(config.folder, output_folder))
             shutil.move(config.folder, output_folder)
-            self.log("Written output to", output_folder)
 
     def run(self):
         while True:
+            self.log('parsing...')
             self.parse_configs()
+
+            self.log('launching GAMEs...')
             self.launch_models()
+
+            self.log('will sleep for {} seconds'.format(self.sleep_time))
             time.sleep(self.sleep_time)

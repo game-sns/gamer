@@ -158,7 +158,8 @@ def notify_user_of_end(recipient, name_surname, success, out_link):
     return notify_user(msg, recipient, name_surname, "GAME | your results")
 
 
-def notify_admins(user_email, user_name, user_school, user_folder, event):
+def notify_admins(user_email, user_name, user_school, user_folder, event,
+                  *args, **kwargs):
     for admin in ADMIN_CONFIG:
         if event in admin['events']:
             now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -186,6 +187,10 @@ def notify_admins(user_email, user_name, user_school, user_folder, event):
                 msg = 'At {} GAME failed: input submitted by {} has to be ' \
                       'chunked!' \
                     .format(now, user)
+            elif event == 'on_parse_error':
+                location = kwargs['location']
+                msg = 'At {} GAME failed parsing input of {}, located at {}' \
+                    .format(now, user, location)
             else:  # shouldn't arrive here
                 msg = 'At {} something happened relative to {}' \
                     .format(now, user)
