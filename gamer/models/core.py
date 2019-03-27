@@ -39,7 +39,6 @@ def get_available_cores(sample_time=3, min_cpu=75):
     ]
     n_available = len(available_cores) - SAFETY_CORES
     n_available = max(0, n_available)  # if less than 0, return 0
-    n_available = int(math.floor(n_available / MAX_PARALLEL_GAMES))
     return n_available
 
 
@@ -49,7 +48,7 @@ class Runner(Logger):
     def __init__(self, features, inputs_file, errors_file,
                  labels_file,
                  output_folder, output_archive, optional_files, n_repetitions,
-                 n_estimators, email, name_surname, institution,
+                 n_estimators, email, name_surname, institution, max_cores,
                  verbose=True):
         Logger.__init__(self, verbose)
 
@@ -68,7 +67,7 @@ class Runner(Logger):
             features
         )
 
-        self.max_cores = get_available_cores()  # count cores available
+        self.max_cores = max_cores  # count cores available
         self.driver = Game(
             files,
             self.max_cores,
@@ -244,7 +243,7 @@ class GameConfig(Logger):
 
         return None
 
-    def get_args(self):
+    def get_args(self, max_cores):
         """
         :return: tuple (...)
             Args written in config file
@@ -266,7 +265,8 @@ class GameConfig(Logger):
                self.n_ests, \
                self.get_arg("Email"), \
                self.get_arg("name_surname"), \
-               self.get_arg("institution")
+               self.get_arg("institution"), \
+               max_cores
 
 
 class Gamer(Logger):
@@ -303,9 +303,12 @@ class Gamer(Logger):
         self.create_gamers()
 
     def create_gamers(self):
+        max_cores = get_available_cores()
+        max_cores = int(math.floor(max_cores / len(self.configs)))
+
         self.runners = [
             Runner(
-                *config.get_args()
+                *config.get_args(max_cores)
             ) for config in self.configs
         ]
         self.slaves = [
@@ -315,7 +318,6 @@ class Gamer(Logger):
 
     def launch_models(self):
         for i, slave in enumerate(self.slaves):  # start
-            self.log('started {}-th slave'.format(i))
             slave.start()
 
         for i, slave in enumerate(self.slaves):  # wait until all are done

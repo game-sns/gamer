@@ -77,8 +77,6 @@ def notify_user(raw_message, recipient, name_surname, subject):
         True iff successful notification
     """
 
-    print 'sendin email to {} about {}'.format(recipient, subject)
-
     raw_message = "Dear {},<br><br>".format(name_surname) + raw_message
     raw_message += "<br><br>Regards,<br><br>GAME developers"  # end
 
