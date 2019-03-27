@@ -82,10 +82,11 @@ class Runner(Logger):
         self.download_token = None
 
     def start(self):
-        self.successful_run = notify_user_of_start(self.email,
-                                                   self.name_surname)
+        notify_user_of_start(self.email,
+                             self.name_surname)
         notify_admins(self.email, self.name_surname, self.institution,
                       self.output_folder, 'on_start')
+        self.successful_run = True
 
     def run(self):
         self.start()
@@ -340,6 +341,10 @@ class Gamer(Logger):
 
             self.log('{} -> {}'.format(config.folder, output_folder))
             shutil.move(config.folder, output_folder)
+
+        self.configs = []  # force reset all
+        self.runners = []
+        self.slaves = []
 
     def run(self):
         while True:
