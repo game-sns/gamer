@@ -9,6 +9,7 @@ import datetime
 import json
 import locale
 import os
+import traceback
 from email.mime.text import MIMEText
 
 # script settings
@@ -89,7 +90,8 @@ def notify_user(raw_message, recipient, name_surname, subject):
 
     try:
         send_msg(msg)
-    except:
+    except Exception as e:
+        traceback.print_exc()
         exception = GamerException.build_email_exception(recipient)
         raise exception
 

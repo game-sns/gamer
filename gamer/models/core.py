@@ -303,18 +303,19 @@ class Gamer(Logger):
         self.create_gamers()
 
     def create_gamers(self):
-        max_cores = get_available_cores()
-        max_cores = int(math.floor(max_cores / len(self.configs)))
+        if self.configs:
+            max_cores = get_available_cores()
+            max_cores = int(math.floor(max_cores / len(self.configs)))
 
-        self.runners = [
-            Runner(
-                *config.get_args(max_cores)
-            ) for config in self.configs
-        ]
-        self.slaves = [
-            Process(target=runner.run)
-            for runner in self.runners
-        ]
+            self.runners = [
+                Runner(
+                    *config.get_args(max_cores)
+                ) for config in self.configs
+            ]
+            self.slaves = [
+                Process(target=runner.run)
+                for runner in self.runners
+            ]
 
     def launch_models(self):
         for i, slave in enumerate(self.slaves):  # start
