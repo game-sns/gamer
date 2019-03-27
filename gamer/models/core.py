@@ -92,8 +92,8 @@ class Runner(Logger):
         self.start()
 
         try:
-            self.log("Starting GAME driver with at most {} cores",
-                     self.max_cores)
+            self.log("Starting GAME driver with at most {} cores"
+                     .format(self.max_cores))
             self.log("output:", self.output_folder)
 
             game_behaviour = self.driver.run()
@@ -101,8 +101,9 @@ class Runner(Logger):
                 self.successful_run = False
             else:
                 self.successful_run = True
-            self.successful_run = True
         except Exception as e:
+            traceback.print_exc()
+
             self.successful_run = False
             self.log(self.email, "stopped GAME due to", e)
 
@@ -137,7 +138,8 @@ class Runner(Logger):
         self.output_archive += ('.' + ext)  # add extension
 
     def end(self):
-        self._create_archive()
+        if self.successful_run:
+            self._create_archive()
 
         notify_user_of_end(
             self.email,
