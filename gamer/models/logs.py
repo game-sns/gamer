@@ -8,7 +8,7 @@ from datetime import datetime
 
 from gamer.utils.misc import get_actual_class_name
 
-LOG_TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
+LOG_TIME_FORMAT = "%Y-%m-%d %H_%M_%S"
 
 
 def now():
