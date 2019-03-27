@@ -93,7 +93,7 @@ def notify_user(raw_message, recipient, name_surname, subject):
     except Exception as e:
         traceback.print_exc()
         exception = GamerException.build_email_exception(recipient)
-        raise exception
+        return False
 
     return True
 
