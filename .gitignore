@@ -4,6 +4,7 @@ gamer/library
 gamer/.user_credentials
 gamer/emails/.user_credentials
 gamer/emails/config
+*.log
 
 ### PyCharm ###
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio and Webstorm
