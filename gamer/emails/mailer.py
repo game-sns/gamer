@@ -28,9 +28,10 @@ EMAIL_DRIVER = GMailApiOAuth(
 ).create_driver()
 EMAIL_SENDER = "game.cosmosns@gmail.com"
 ADMIN_CONFIG_FILE = os.path.join(CONFIG_FOLDER, 'admins.json')
-ADMIN_CONFIG = json.load(open(ADMIN_CONFIG_FILE, 'r'))
-HELP_EMAIL = ADMIN_CONFIG[0]
-# todo hooks for ["on_download", "on_missing_additional", "on_chunks"] events
+HELP_EMAIL = {
+    "name": "Stefano",
+    "email": "stefano.fogarollo@sns.it"
+}
 
 # setting locale
 locale.setlocale(locale.LC_ALL, "it_IT.UTF-8")  # italian
@@ -162,7 +163,8 @@ def notify_user_of_end(recipient, name_surname, success, out_link):
 
 def notify_admins(user_email, user_name, user_school, user_folder, event,
                   *args, **kwargs):
-    for admin in ADMIN_CONFIG:
+    admins = json.load(open(ADMIN_CONFIG_FILE, 'r'))
+    for admin in admins:
         if event in admin['events']:
             now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             user = '{} ({} of {})'.format(
